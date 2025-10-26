@@ -40,6 +40,8 @@ if 'user_query' not in st.session_state:
     st.session_state.user_query = ''
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
+if 'trigger_submit' not in st.session_state:
+    st.session_state.trigger_submit = False
 
 # HuggingFace LLM settings
 if 'llm_provider' not in st.session_state:
@@ -559,6 +561,8 @@ def main():
             with cols[idx % 2]:
                 if st.button(f"{icon} {category}", key=f"ex{idx}", use_container_width=True):
                     st.session_state.user_query = example
+                    st.session_state.trigger_submit = True
+                    st.rerun()
         
         st.markdown("<br>", unsafe_allow_html=True)
         
@@ -622,16 +626,25 @@ def main():
                 st.markdown(f"""<div class="chat-message assistant-message"><strong>🤖 AI Assistant:</strong><br>{msg['content']}</div>""", unsafe_allow_html=True)
     
     # Process Query
-    if submit_button and user_query:
-        st.session_state.conversation_history.append({'role': 'user', 'content': user_query})
+    # Check if triggered by example button or submit button
+    should_process = (submit_button and user_query) or (st.session_state.trigger_submit and st.session_state.user_query)
+    
+    if should_process:
+        # Reset trigger
+        st.session_state.trigger_submit = False
+        
+        # Use the query from session state if triggered by example
+        query_to_process = st.session_state.user_query if st.session_state.user_query else user_query
+        
+        st.session_state.conversation_history.append({'role': 'user', 'content': query_to_process})
         
         with st.spinner("🤖 AI is analyzing your query..."):
             # Get relevant tips from vector store
-            relevant_tips = retrieve_relevant_tips(user_query, embedding_model, collection)
+            relevant_tips = retrieve_relevant_tips(query_to_process, embedding_model, collection)
             
             # Generate intelligent response
             ai_response, current_activity, alternatives = generate_smart_response(
-                user_query, CO2_DATA, relevant_tips
+                query_to_process, CO2_DATA, relevant_tips
             )
             
             st.session_state.conversation_history.append({'role': 'assistant', 'content': ai_response})

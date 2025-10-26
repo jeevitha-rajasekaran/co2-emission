@@ -419,7 +419,7 @@ Based on your query about {category.lower() if category != "General" else "susta
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================
 
 def initialize_llm():
-    """Initialize HuggingFace LLM with simple chain"""
+    """Initialize HuggingFace LLM - Simple version"""
     try:
         hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not hf_token:
@@ -430,16 +430,9 @@ def initialize_llm():
             repo_id=st.session_state.model_name,
             huggingfacehub_api_token=hf_token,
             temperature=0.7,
-            max_length=512
+            max_new_tokens=512
         )
-        
-        # Create a simple chain using LCEL (LangChain Expression Language)
-        prompt = ChatPromptTemplate.from_template(
-            "You are an environmental AI assistant. Answer this sustainability question: {question}"
-        )
-        chain = prompt | llm | StrOutputParser()
-        return chain
-        
+        return llm
     except Exception as e:
         st.warning(f"⚠️ HuggingFace LLM unavailable: {str(e)}. Using smart response engine.")
         return None

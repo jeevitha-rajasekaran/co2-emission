@@ -15,11 +15,11 @@ import re
 
 # LangChain imports
 from langchain_huggingface import HuggingFaceEndpoint
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain.memory import ConversationBufferMemory
+from langchain_core.memory import ConversationBufferMemory
 from langchain.agents import Tool, AgentExecutor, create_react_agent
-from langchain.tools import BaseTool
+from langchain_core.tools import BaseTool
 from langchain import hub
 
 # ==================== PAGE CONFIG ====================

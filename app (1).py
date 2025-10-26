@@ -730,7 +730,7 @@ def main():
         <div class="tech-item"><span class="tech-icon icon-animated">📊</span><span>Real-time Analysis</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">🗄️</span><span>Vector Search Engine</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">🤗</span><span>AI-Powered Insights</span></div>
-        <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Impact Visualization</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Plotly</span></div>
         """, unsafe_allow_html=True)
     with footer_col3:
         st.markdown("### <span class='icon-animated'>🎯</span> Quick Facts", unsafe_allow_html=True)

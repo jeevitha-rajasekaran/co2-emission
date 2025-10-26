@@ -3,6 +3,11 @@ pandas
 chromadb
 sentence-transformers
 plotly
-langchain
-langchain-huggingface
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-core>=0.3.0
+langchain-huggingface>=0.1.0
 huggingface-hub
+python-dotenv
+transformers
+torch

@@ -149,8 +149,8 @@ st.markdown("""
         100% { transform: translateX(-100vw) translateY(0) rotate(-360deg); right: 110%; }
     }
     .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; text-align: center; animation: fadeInUp 1s ease-out; }
-    .hero-title { font-size: 4rem; font-weight: 800; color: white; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3); line-height: 1.2; }
-    .hero-subtitle { font-size: 1.5rem; color: rgba(255, 255, 255, 0.95); margin-bottom: 2rem; font-weight: 400; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2); }
+    .hero-title { font-size: 4rem; font-weight: 800; color: white !important; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5); line-height: 1.2; }
+    .hero-subtitle { font-size: 1.5rem; color: white !important; margin-bottom: 2rem; font-weight: 400; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
     .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 2rem; flex-wrap: wrap; }
     .hero-stat-item { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); padding: 1.5rem 2.5rem; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); animation: fadeInUp 1.2s ease-out; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
     .hero-stat-value { font-size: 2.5rem; font-weight: 700; color: white; display: block; }

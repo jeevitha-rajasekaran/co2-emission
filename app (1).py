@@ -2,15 +2,9 @@
 CO₂ Reduction AI Agent - HuggingFace Version (Streamlit Cloud Optimized)
 """
 
-# SQLite fix for ChromaDB (MUST BE FIRST)
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
-
 import streamlit as st
 import pandas as pd
 import chromadb
-from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict
 import plotly.graph_objects as go
@@ -433,26 +427,17 @@ def initialize_vector_store():
     try:
         embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
         
-        chroma_client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=None,
-            anonymized_telemetry=False
-        ))
+        # Simple ChromaDB client (works on Streamlit Cloud)
+        chroma_client = chromadb.Client()
         
         try:
-            collection = chroma_client.create_collection(
-                name="sustainability_tips",
-                metadata={"hnsw:space": "cosine"}
-            )
+            collection = chroma_client.create_collection(name="sustainability_tips")
         except:
             try:
                 chroma_client.delete_collection(name="sustainability_tips")
             except:
                 pass
-            collection = chroma_client.create_collection(
-                name="sustainability_tips",
-                metadata={"hnsw:space": "cosine"}
-            )
+            collection = chroma_client.create_collection(name="sustainability_tips")
         
         for idx, tip in enumerate(SUSTAINABILITY_TIPS):
             embedding = embedding_model.encode(tip, show_progress_bar=False).tolist()

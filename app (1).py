@@ -1,10 +1,16 @@
 """
-CO₂ Reduction AI Agent - HuggingFace Version
+CO₂ Reduction AI Agent - HuggingFace Version (Streamlit Cloud Optimized)
 """
+
+# SQLite fix for ChromaDB (MUST BE FIRST)
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 import streamlit as st
 import pandas as pd
 import chromadb
+from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict
 import plotly.graph_objects as go
@@ -13,14 +19,13 @@ from datetime import datetime
 import os
 import re
 
-# LangChain imports
-from langchain_huggingface import HuggingFaceEndpoint
-from langchain_core.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain_core.memory import ConversationBufferMemory
-from langchain.agents import Tool, AgentExecutor, create_react_agent
-from langchain_core.tools import BaseTool
-from langchain import hub
+# LangChain imports (wrapped in try-except for safety)
+try:
+    from langchain_huggingface import HuggingFaceEndpoint
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
+    st.warning("LangChain not available - using smart response engine only")
 
 # ==================== PAGE CONFIG ====================
 st.set_page_config(
@@ -240,43 +245,30 @@ def parse_query_category(query: str) -> str:
     """Identify which category the query is about"""
     query_lower = query.lower()
     
-    # Food keywords - CHECK FIRST (highest priority for food-related terms)
     food_keywords = ['food', 'diet', 'meat', 'vegetarian', 'vegan', 'eat', 'eating', 'meal', 'plant-based', 'consume', 'consumption']
-    # Lifestyle keywords
     lifestyle_keywords = ['shop', 'shopping', 'online', 'local', 'purchase', 'buy', 'buying']
-    # Household keywords
     household_keywords = ['electricity', 'bulb', 'light', 'led', 'household', 'home', 'energy', 'power', 'appliance']
-    # Transport keywords - use word boundaries to avoid matching "car" in "carbon"
     transport_keywords = [' car ', ' drive', 'driving', 'petrol', ' bus ', 'bicycle', ' bike ', 'transport', 'commute', 'travel', 'vehicle', 'car,', 'car.', 'car?']
-    # Special check for AC (can be confused with "ac" in other words)
     ac_keywords = [' ac ', 'air condition', 'air-condition', 'a/c', 'ac usage', 'ac use']
     
-    # Check food first (highest priority)
     if any(kw in query_lower for kw in food_keywords):
         return "Food"
-    # Check lifestyle
     elif any(kw in query_lower for kw in lifestyle_keywords):
         return "Lifestyle"
-    # Check AC specifically
     elif any(kw in query_lower for kw in ac_keywords):
         return "Household"
-    # Check other household
     elif any(kw in query_lower for kw in household_keywords):
         return "Household"
-    # Check transport last with word boundaries
     elif any(kw in query_lower for kw in transport_keywords):
         return "Transport"
     
     return "General"
 
 def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
-    """Enhanced activity finder with better matching - CATEGORY FIRST"""
+    """Enhanced activity finder with better matching"""
     query_lower = query.lower()
-    
-    # First determine the category from the query
     category = parse_query_category(query)
     
-    # If it's Food category, only match food items
     if category == "Food":
         if 'meat' in query_lower:
             for item in CO2_DATA:
@@ -286,12 +278,10 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
             for item in CO2_DATA:
                 if 'Vegetarian' in item['Activity']:
                     return item
-        # Default to highest emission food item
         food_items = [item for item in CO2_DATA if item['Category'] == 'Food']
         if food_items:
             return max(food_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
     
-    # If it's Lifestyle category, only match lifestyle items
     if category == "Lifestyle":
         if 'online' in query_lower:
             for item in CO2_DATA:
@@ -301,12 +291,10 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
             for item in CO2_DATA:
                 if 'Local' in item['Activity']:
                     return item
-        # Default to highest emission lifestyle item
         lifestyle_items = [item for item in CO2_DATA if item['Category'] == 'Lifestyle']
         if lifestyle_items:
             return max(lifestyle_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
     
-    # If it's Household category, only match household items
     if category == "Household":
         if 'ac' in query_lower or 'air condition' in query_lower:
             for item in CO2_DATA:
@@ -320,12 +308,10 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
             for item in CO2_DATA:
                 if 'Old Bulb' in item['Activity']:
                     return item
-        # Default to highest emission household item
         household_items = [item for item in CO2_DATA if item['Category'] == 'Household']
         if household_items:
             return max(household_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
     
-    # If it's Transport category, only match transport items
     if category == "Transport":
         if 'car' in query_lower or 'petrol' in query_lower or 'drive' in query_lower or 'driving' in query_lower:
             for item in CO2_DATA:
@@ -339,7 +325,6 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
             for item in CO2_DATA:
                 if 'Bicycle' in item['Activity']:
                     return item
-        # Default to highest emission transport item
         transport_items = [item for item in CO2_DATA if item['Category'] == 'Transport']
         if transport_items:
             return max(transport_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
@@ -354,7 +339,6 @@ def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> 
     category = parse_query_category(query)
     current_activity = find_activity_from_query(query, CO2_DATA)
     
-    # Category-specific icons (animated via CSS)
     category_icons = {
         "Transport": '<span class="icon-animated">🚗</span>',
         "Household": '<span class="icon-animated">🏠</span>',
@@ -364,7 +348,6 @@ def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> 
     }
     
     if not current_activity:
-        # General sustainability advice
         response = f"""**{category_icons.get(category, category_icons['General'])} Sustainability Guidance**
 
 Based on your query about {category.lower() if category != "General" else "sustainability"}, here are key recommendations:
@@ -380,7 +363,6 @@ Based on your query about {category.lower() if category != "General" else "susta
         
         return response, None, []
     
-    # Found specific activity - generate detailed response
     category_items = [item for item in CO2_DATA if item['Category'] == current_activity['Category']]
     alternatives = [item for item in category_items if item != current_activity]
     alternatives.sort(key=lambda x: x['Avg_CO2_Emission(kg/day)'])
@@ -409,7 +391,6 @@ Based on your query about {category.lower() if category != "General" else "susta
             response += f"   • Reduction: {reduction_pct:.0f}%\n"
             response += f"   • Annual impact: {annual_savings:.0f} kg CO₂ (≈ {trees} trees planted)\n\n"
     
-    # Add relevant sustainability tips
     if relevant_tips:
         response += "\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
         response += relevant_tips[0]
@@ -419,11 +400,20 @@ Based on your query about {category.lower() if category != "General" else "susta
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================
 
 def initialize_llm():
-    """Initialize HuggingFace LLM - Simple version"""
+    """Initialize HuggingFace LLM"""
+    if not LANGCHAIN_AVAILABLE:
+        return None
+    
     try:
         hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not hf_token:
-            st.warning("⚠️ HuggingFace API token not found. Using smart response engine only.")
+            # Try getting from Streamlit secrets
+            try:
+                hf_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")
+            except:
+                pass
+        
+        if not hf_token:
             return None
         
         llm = HuggingFaceEndpoint(
@@ -434,23 +424,44 @@ def initialize_llm():
         )
         return llm
     except Exception as e:
-        st.warning(f"⚠️ HuggingFace LLM unavailable: {str(e)}. Using smart response engine.")
         return None
+
 # ==================== VECTOR STORE FUNCTIONS ====================
 
 @st.cache_resource
 def initialize_vector_store():
     try:
-        embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        chroma_client = chromadb.Client()
+        embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+        
+        chroma_client = chromadb.Client(Settings(
+            chroma_db_impl="duckdb+parquet",
+            persist_directory=None,
+            anonymized_telemetry=False
+        ))
+        
         try:
-            collection = chroma_client.create_collection(name="sustainability_tips")
+            collection = chroma_client.create_collection(
+                name="sustainability_tips",
+                metadata={"hnsw:space": "cosine"}
+            )
         except:
-            chroma_client.delete_collection(name="sustainability_tips")
-            collection = chroma_client.create_collection(name="sustainability_tips")
+            try:
+                chroma_client.delete_collection(name="sustainability_tips")
+            except:
+                pass
+            collection = chroma_client.create_collection(
+                name="sustainability_tips",
+                metadata={"hnsw:space": "cosine"}
+            )
+        
         for idx, tip in enumerate(SUSTAINABILITY_TIPS):
-            embedding = embedding_model.encode(tip).tolist()
-            collection.add(embeddings=[embedding], documents=[tip], ids=[f"tip_{idx}"])
+            embedding = embedding_model.encode(tip, show_progress_bar=False).tolist()
+            collection.add(
+                embeddings=[embedding],
+                documents=[tip],
+                ids=[f"tip_{idx}"]
+            )
+        
         return embedding_model, collection
     except Exception as e:
         st.error(f"Error initializing embeddings: {str(e)}")
@@ -458,7 +469,7 @@ def initialize_vector_store():
 
 def retrieve_relevant_tips(query, embedding_model, collection, n_results=3):
     try:
-        query_embedding = embedding_model.encode(query).tolist()
+        query_embedding = embedding_model.encode(query, show_progress_bar=False).tolist()
         results = collection.query(query_embeddings=[query_embedding], n_results=n_results)
         return results['documents'][0] if results['documents'] else []
     except:
@@ -507,32 +518,25 @@ def create_pie_chart(data):
 
 def main():
     # Hero Section
-    st.markdown("""
+    st.markdown(f"""
     <div class="hero-section">
-        <div class="hero-slider">
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-            <div class="hero-slide"></div>
-        </div>
         <div class="hero-content">
             <h1 class="hero-title">🌍 CO₂ Reduction Platform</h1>
             <p class="hero-subtitle">
                 AI-Powered Environmental Intelligence 
-                <span class="llm-badge">🤖 HuggingFace AI</span>
+                <span class="llm-badge">🤖 Smart AI</span>
             </p>
             <div class="hero-stats">
                 <div class="hero-stat-item">
-                    <span class="hero-stat-value">""" + str(st.session_state.queries_count) + """</span>
+                    <span class="hero-stat-value">{st.session_state.queries_count}</span>
                     <span class="hero-stat-label">Queries Analyzed</span>
                 </div>
                 <div class="hero-stat-item">
-                    <span class="hero-stat-value">""" + f"{st.session_state.total_savings:.1f}" + """</span>
+                    <span class="hero-stat-value">{st.session_state.total_savings:.1f}</span>
                     <span class="hero-stat-label">kg CO₂ Saved</span>
                 </div>
                 <div class="hero-stat-item">
-                    <span class="hero-stat-value">""" + str(int(st.session_state.total_savings * 365 / 21)) + """</span>
+                    <span class="hero-stat-value">{int(st.session_state.total_savings * 365 / 21)}</span>
                     <span class="hero-stat-label">Trees Equivalent</span>
                 </div>
             </div>
@@ -588,9 +592,11 @@ def main():
             clear_chat = st.button("🗑️ Clear Chat", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
+        # FIXED: Removed chat_memory.clear() bug
         if clear_chat:
             st.session_state.conversation_history = []
-            st.session_state.chat_memory.clear()
+            st.session_state.total_savings = 0
+            st.session_state.queries_count = 0
             st.rerun()
     
     with col_right:
@@ -656,7 +662,7 @@ def main():
         st.markdown("---")
         st.markdown('<div class="results-section">', unsafe_allow_html=True)
         st.markdown("## <span class='icon-animated'>📋</span> AI Response", unsafe_allow_html=True)
-        st.markdown(ai_response)
+        st.markdown(ai_response, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Detailed visualizations if activity found
@@ -725,7 +731,7 @@ def main():
         <div class="tech-item"><span class="tech-icon icon-animated">🧠</span><span>Smart Query Parser</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">📊</span><span>Real-time Analysis</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">🗄️</span><span>Vector Search Engine</span></div>
-        <div class="tech-item"><span class="tech-icon icon-animated">🤗</span><span>HuggingFace AI</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">🤗</span><span>AI-Powered Insights</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Impact Visualization</span></div>
         """, unsafe_allow_html=True)
     with footer_col3:
@@ -737,7 +743,6 @@ def main():
             st.session_state.queries_count = 0
             st.session_state.history = []
             st.session_state.conversation_history = []
-            st.session_state.chat_memory.clear()
             st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     
@@ -745,7 +750,7 @@ def main():
     st.markdown("""
     <div class="copyright-footer">
         <p class="copyright-text">
-            © 2025 CO₂ Reduction Platform | Powered by HuggingFace AI 🤗
+            © 2025 CO₂ Reduction Platform | Powered by AI 🤖
         </p>
     </div>
     """, unsafe_allow_html=True)

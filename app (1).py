@@ -39,11 +39,6 @@ if 'history' not in st.session_state:
     st.session_state.history = []
 if 'user_query' not in st.session_state:
     st.session_state.user_query = ''
-if 'chat_memory' not in st.session_state:
-    st.session_state.chat_memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
-    )
 if 'conversation_history' not in st.session_state:
     st.session_state.conversation_history = []
 
@@ -424,7 +419,7 @@ Based on your query about {category.lower() if category != "General" else "susta
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================
 
 def initialize_llm():
-    """Initialize HuggingFace LLM"""
+    """Initialize HuggingFace LLM with simple chain"""
     try:
         hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not hf_token:
@@ -437,11 +432,17 @@ def initialize_llm():
             temperature=0.7,
             max_length=512
         )
-        return llm
+        
+        # Create a simple chain using LCEL (LangChain Expression Language)
+        prompt = ChatPromptTemplate.from_template(
+            "You are an environmental AI assistant. Answer this sustainability question: {question}"
+        )
+        chain = prompt | llm | StrOutputParser()
+        return chain
+        
     except Exception as e:
         st.warning(f"⚠️ HuggingFace LLM unavailable: {str(e)}. Using smart response engine.")
         return None
-
 # ==================== VECTOR STORE FUNCTIONS ====================
 
 @st.cache_resource

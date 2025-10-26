@@ -1,0 +1,101 @@
+Activity,Avg_CO2_Emission(kg/day),Category
+"Car (Petrol, 56 km)",12.88,Transport
+Bus (97 km),5.82,Transport
+Bicycle (19 km),0.0,Transport
+Carpool (76 km),5.827,Transport
+Electric Scooter (65 km),0.975,Transport
+AC usage (7.6 hrs/day),5.7,Household
+LED Bulb (5.9 hrs/day),0.295,Household
+Old Bulb (2.1 hrs/day),0.084,Household
+Refrigerator (24 hrs/day),1.1,Household
+Washing Machine (1 cycle),0.5,Household
+Online shopping (4 orders/month),0.133,Lifestyle
+Local shopping (8 trips/month),0.08,Lifestyle
+Streaming (8.8 hrs/day),0.176,Lifestyle
+Gym visit (1),0.1,Lifestyle
+Mobile use (1.2 hrs/day),0.012,Lifestyle
+Meat-based diet,7.0,Food
+Vegetarian diet,2.0,Food
+Vegan diet,1.5,Food
+Seafood diet,5.5,Food
+Processed food diet,4.0,Food
+"Car (Petrol, 6 km)",1.38,Transport
+Bus (92 km),5.52,Transport
+Bicycle (34 km),0.0,Transport
+Carpool (42 km),3.22,Transport
+Electric Scooter (6 km),0.09,Transport
+AC usage (3.0 hrs/day),2.25,Household
+LED Bulb (3.0 hrs/day),0.15,Household
+Old Bulb (4.3 hrs/day),0.172,Household
+Refrigerator (24 hrs/day),1.1,Household
+Washing Machine (1 cycle),0.5,Household
+Online shopping (12 orders/month),0.4,Lifestyle
+Local shopping (17 trips/month),0.17,Lifestyle
+Streaming (6.8 hrs/day),0.136,Lifestyle
+Gym visit (1),0.1,Lifestyle
+Mobile use (5.4 hrs/day),0.054,Lifestyle
+Meat-based diet,7.0,Food
+Vegetarian diet,2.0,Food
+Vegan diet,1.5,Food
+Seafood diet,5.5,Food
+Processed food diet,4.0,Food
+"Car (Petrol, 96 km)",22.08,Transport
+Bus (64 km),3.84,Transport
+Bicycle (84 km),0.0,Transport
+Carpool (19 km),1.457,Transport
+Electric Scooter (66 km),0.99,Transport
+AC usage (2.0 hrs/day),1.5,Household
+LED Bulb (7.8 hrs/day),0.39,Household
+Old Bulb (5.2 hrs/day),0.208,Household
+Refrigerator (24 hrs/day),1.1,Household
+Washing Machine (1 cycle),0.5,Household
+Online shopping (3 orders/month),0.1,Lifestyle
+Local shopping (5 trips/month),0.05,Lifestyle
+Streaming (7.7 hrs/day),0.154,Lifestyle
+Gym visit (1),0.1,Lifestyle
+Mobile use (2.9 hrs/day),0.029,Lifestyle
+Meat-based diet,7.0,Food
+Vegetarian diet,2.0,Food
+Vegan diet,1.5,Food
+Seafood diet,5.5,Food
+Processed food diet,4.0,Food
+"Car (Petrol, 43 km)",9.89,Transport
+Bus (22 km),1.32,Transport
+Bicycle (8 km),0.0,Transport
+Carpool (93 km),7.13,Transport
+Electric Scooter (64 km),0.96,Transport
+AC usage (7.2 hrs/day),5.4,Household
+LED Bulb (5.2 hrs/day),0.26,Household
+Old Bulb (1.2 hrs/day),0.048,Household
+Refrigerator (24 hrs/day),1.1,Household
+Washing Machine (1 cycle),0.5,Household
+Online shopping (15 orders/month),0.5,Lifestyle
+Local shopping (7 trips/month),0.07,Lifestyle
+Streaming (7.7 hrs/day),0.154,Lifestyle
+Gym visit (1),0.1,Lifestyle
+Mobile use (10.2 hrs/day),0.102,Lifestyle
+Meat-based diet,7.0,Food
+Vegetarian diet,2.0,Food
+Vegan diet,1.5,Food
+Seafood diet,5.5,Food
+Processed food diet,4.0,Food
+"Car (Petrol, 39 km)",8.97,Transport
+Bus (82 km),4.92,Transport
+Bicycle (85 km),0.0,Transport
+Carpool (40 km),3.067,Transport
+Electric Scooter (54 km),0.81,Transport
+AC usage (8.3 hrs/day),6.225,Household
+LED Bulb (4.4 hrs/day),0.22,Household
+Old Bulb (6.7 hrs/day),0.268,Household
+Refrigerator (24 hrs/day),1.1,Household
+Washing Machine (1 cycle),0.5,Household
+Online shopping (18 orders/month),0.6,Lifestyle
+Local shopping (12 trips/month),0.12,Lifestyle
+Streaming (11.3 hrs/day),0.226,Lifestyle
+Gym visit (1),0.1,Lifestyle
+Mobile use (10.8 hrs/day),0.108,Lifestyle
+Meat-based diet,7.0,Food
+Vegetarian diet,2.0,Food
+Vegan diet,1.5,Food
+Seafood diet,5.5,Food
+Processed food diet,4.0,Food

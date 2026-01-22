@@ -615,55 +615,85 @@ def main():
         st.info(f"🌍 Global Target:\n < 6 kg CO₂/person/day by 2030")
         st.success(f"🌳 Tree Impact:\n1 tree = 21 kg CO₂/year")
     
-    # Display Chat History
+    # Show this BEFORE processing new query
     if st.session_state.conversation_history:
         st.markdown("---")
         st.markdown("## <span class='icon-animated'>💬</span> Conversation History", unsafe_allow_html=True)
-        for msg in st.session_state.conversation_history:
+        
+        # Add a container with subtle styling
+        st.markdown("""
+        <style>
+        .conversation-wrapper {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .message-count {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="conversation-wrapper">', unsafe_allow_html=True)
+        st.markdown(f'<div class="message-count">📊 Total Messages: {len(st.session_state.conversation_history)}</div>', unsafe_allow_html=True)
+        
+        # Display ALL messages - not just last 5
+        for idx, msg in enumerate(st.session_state.conversation_history):
             if msg['role'] == 'user':
-                st.markdown(f"""<div class="chat-message user-message"><strong>👤 You:</strong><br>{msg['content']}</div>""", unsafe_allow_html=True)
+                st.markdown(f"""
+                <div class="chat-message user-message">
+                    <strong>👤 You:</strong><br>{msg['content']}
+                </div>
+                """, unsafe_allow_html=True)
             else:
-                st.markdown(f"""<div class="chat-message assistant-message"><strong>🤖 AI Assistant:</strong><br>{msg['content']}</div>""", unsafe_allow_html=True)
+                st.markdown(f"""
+                <div class="chat-message assistant-message">
+                    <strong>🤖 AI Assistant:</strong><br>{msg['content']}
+                </div>
+                """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    # Process Query
-    # Check if triggered by example button or submit button
+    # ========== PROCESS NEW QUERY ==========
     should_process = (submit_button and user_query) or (st.session_state.trigger_submit and st.session_state.user_query)
     
     if should_process:
-        # Reset trigger
         st.session_state.trigger_submit = False
-        
-        # Use the query from session state if triggered by example
         query_to_process = st.session_state.user_query if st.session_state.user_query else user_query
         
+        # Add user message
         st.session_state.conversation_history.append({'role': 'user', 'content': query_to_process})
         
         with st.spinner("🤖 AI is analyzing your query..."):
-            # Get relevant tips from vector store
             relevant_tips = retrieve_relevant_tips(query_to_process, embedding_model, collection)
-            
-            # Generate intelligent response
             ai_response, current_activity, alternatives = generate_smart_response(
                 query_to_process, CO2_DATA, relevant_tips
             )
             
+            # Add assistant response
             st.session_state.conversation_history.append({'role': 'assistant', 'content': ai_response})
             st.session_state.queries_count += 1
             
-            # Calculate savings if applicable
+            # Calculate savings
             if current_activity and alternatives:
                 best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
                 savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alt['Avg_CO2_Emission(kg/day)']
                 if savings > 0:
                     st.session_state.total_savings += savings
         
+        # Show latest response prominently
         st.markdown("---")
         st.markdown('<div class="results-section">', unsafe_allow_html=True)
-        st.markdown("## <span class='icon-animated'>📋</span> AI Response", unsafe_allow_html=True)
+        st.markdown("## <span class='icon-animated'>📋</span> Latest AI Response", unsafe_allow_html=True)
         st.markdown(ai_response, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Detailed visualizations if activity found
+        # Show visualizations if applicable
         if current_activity and alternatives:
             st.markdown("---")
             st.markdown("## <span class='icon-animated'>📊</span> Detailed Impact Analysis", unsafe_allow_html=True)
@@ -697,6 +727,10 @@ def main():
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+        
+        # Clear the input for next query
+        st.session_state.user_query = ''
+        st.rerun()
     
     elif submit_button:
         st.warning("⚠️ Please enter a question to get started!")

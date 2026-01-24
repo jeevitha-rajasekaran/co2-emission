@@ -1102,7 +1102,7 @@ def main():
                             
                             if html_report:
                                 st.download_button(
-                                    label="📥 Download PDF",
+                                    label="📥 Download Generated File ",
                                     data=html_report,
                                     file_name=f"CO2_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
                                     mime="text/html",

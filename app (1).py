@@ -1,5 +1,5 @@
 """
-CO₂ Reduction AI Agent - Enhanced with Charts After Every Query
+CO₂ Reduction AI Agent - Enhanced with Charts After Every Query + PDF Export
 """
 
 import streamlit as st
@@ -12,6 +12,8 @@ import plotly.express as px
 from datetime import datetime
 import os
 import re
+import base64
+from io import BytesIO
 
 # LangChain imports (wrapped in try-except for safety)
 try:
@@ -527,6 +529,330 @@ def create_pie_chart(data):
     fig.update_layout(height=400, showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1), font=dict(family='Inter', size=12), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
     return fig
 
+# ==================== PDF GENERATION FUNCTIONS ====================
+
+def generate_pdf_report(user_query, ai_response, current_activity, alternatives, savings):
+    """Generate HTML-based PDF report"""
+    
+    if not current_activity or not alternatives:
+        return None
+    
+    best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+    annual_savings = savings * 365
+    trees_saved = int(annual_savings / 21)
+    reduction_pct = (savings / current_activity['Avg_CO2_Emission(kg/day)']) * 100 if savings > 0 else 0
+    
+    # Generate chart as image
+    fig = create_comparison_chart(current_activity, alternatives[:3])
+    
+    # Convert plotly chart to image (base64)
+    img_bytes = fig.to_image(format="png", width=1200, height=500)
+    img_base64 = base64.b64encode(img_bytes).decode()
+    
+    # Clean AI response for PDF (remove HTML tags)
+    clean_response = re.sub('<[^<]+?>', '', ai_response)
+    clean_response = clean_response.replace('**', '')
+    
+    # Create HTML report
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+            
+            body {{
+                font-family: 'Inter', Arial, sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: #ffffff;
+                color: #1f2937;
+            }}
+            
+            .header {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+            }}
+            
+            .header h1 {{
+                margin: 0;
+                font-size: 36px;
+                font-weight: 800;
+            }}
+            
+            .header p {{
+                margin: 10px 0 0 0;
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            
+            .section {{
+                background: #f9fafb;
+                border: 2px solid #e5e7eb;
+                border-radius: 16px;
+                padding: 30px;
+                margin-bottom: 25px;
+            }}
+            
+            .section h2 {{
+                color: #10b981;
+                font-size: 24px;
+                font-weight: 700;
+                margin-top: 0;
+                margin-bottom: 15px;
+                border-bottom: 3px solid #10b981;
+                padding-bottom: 10px;
+            }}
+            
+            .query-box {{
+                background: #eff6ff;
+                border-left: 5px solid #3b82f6;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 8px;
+            }}
+            
+            .query-box strong {{
+                color: #1e40af;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }}
+            
+            .metrics-grid {{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin: 25px 0;
+            }}
+            
+            .metric-card {{
+                background: white;
+                border: 2px solid #d1fae5;
+                border-radius: 12px;
+                padding: 20px;
+                text-align: center;
+            }}
+            
+            .metric-card .value {{
+                font-size: 32px;
+                font-weight: 800;
+                color: #10b981;
+                margin: 10px 0;
+            }}
+            
+            .metric-card .label {{
+                font-size: 13px;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }}
+            
+            .chart-container {{
+                text-align: center;
+                margin: 30px 0;
+                background: white;
+                padding: 20px;
+                border-radius: 12px;
+                border: 2px solid #e5e7eb;
+            }}
+            
+            .chart-container img {{
+                max-width: 100%;
+                height: auto;
+                border-radius: 8px;
+            }}
+            
+            .impact-banner {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 40px;
+                border-radius: 16px;
+                text-align: center;
+                margin: 30px 0;
+            }}
+            
+            .impact-banner h2 {{
+                color: white;
+                border: none;
+                margin-bottom: 20px;
+                font-size: 28px;
+            }}
+            
+            .impact-stats {{
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+                margin-top: 25px;
+            }}
+            
+            .impact-stat {{
+                background: rgba(255, 255, 255, 0.2);
+                padding: 25px;
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+            }}
+            
+            .impact-stat .value {{
+                font-size: 48px;
+                font-weight: 800;
+                margin-bottom: 10px;
+            }}
+            
+            .impact-stat .label {{
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            
+            .alternatives-list {{
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 20px 0;
+            }}
+            
+            .alternative-item {{
+                border-left: 4px solid #10b981;
+                padding: 15px;
+                margin: 15px 0;
+                background: #f0fdf4;
+                border-radius: 8px;
+            }}
+            
+            .alternative-item h3 {{
+                color: #059669;
+                margin: 0 0 10px 0;
+                font-size: 18px;
+            }}
+            
+            .alternative-item p {{
+                margin: 5px 0;
+                color: #4b5563;
+                font-size: 14px;
+            }}
+            
+            .footer {{
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #e5e7eb;
+                color: #6b7280;
+                font-size: 12px;
+            }}
+            
+            .response-text {{
+                line-height: 1.8;
+                color: #374151;
+                font-size: 15px;
+                white-space: pre-wrap;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🌍 CO₂ Reduction Analysis Report</h1>
+            <p>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
+        </div>
+        
+        <div class="section">
+            <h2>📝 Your Query</h2>
+            <div class="query-box">
+                <strong>Question:</strong><br>
+                <p style="margin: 10px 0 0 0; font-size: 16px; color: #1f2937;">{user_query}</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🤖 AI Analysis</h2>
+            <div class="response-text">{clean_response}</div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Current Activity Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="label">Current Emissions</div>
+                    <div class="value">{current_activity['Avg_CO2_Emission(kg/day)']} kg</div>
+                    <div class="label">per day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Best Alternative</div>
+                    <div class="value">{best_alt['Avg_CO2_Emission(kg/day)']} kg</div>
+                    <div class="label">per day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Reduction</div>
+                    <div class="value">{reduction_pct:.1f}%</div>
+                    <div class="label">savings</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Emissions Comparison Chart</h2>
+            <div class="chart-container">
+                <img src="data:image/png;base64,{img_base64}" alt="CO2 Comparison Chart">
+            </div>
+        </div>
+        
+        <div class="impact-banner">
+            <h2>🌟 Your Annual Impact Potential</h2>
+            <p style="font-size: 18px; margin: 15px 0;">
+                By switching to <strong>{best_alt['Activity']}</strong>, you could save:
+            </p>
+            <div class="impact-stats">
+                <div class="impact-stat">
+                    <div class="value">{annual_savings:.0f}</div>
+                    <div class="label">kg CO₂ per year</div>
+                </div>
+                <div class="impact-stat">
+                    <div class="value">{trees_saved}</div>
+                    <div class="label">Trees Equivalent</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>💡 Recommended Alternatives</h2>
+            <div class="alternatives-list">
+    """
+    
+    # Add alternatives
+    for idx, alt in enumerate(alternatives[:3], 1):
+        emission_diff = current_activity['Avg_CO2_Emission(kg/day)'] - alt['Avg_CO2_Emission(kg/day)']
+        if emission_diff > 0:
+            alt_reduction_pct = (emission_diff / current_activity['Avg_CO2_Emission(kg/day)']) * 100
+            alt_annual_savings = emission_diff * 365
+            html_content += f"""
+                <div class="alternative-item">
+                    <h3>{idx}. {alt['Activity']} {alt['Icon']}</h3>
+                    <p>• Emissions: {alt['Avg_CO2_Emission(kg/day)']} kg CO₂/day</p>
+                    <p>• Daily savings: {emission_diff:.2f} kg CO₂</p>
+                    <p>• Reduction: {alt_reduction_pct:.0f}%</p>
+                    <p>• Annual impact: {alt_annual_savings:.0f} kg CO₂</p>
+                </div>
+            """
+    
+    html_content += """
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>© 2025 CO₂ Reduction Platform | Powered by AI 🤖</strong></p>
+            <p>This report was generated automatically based on your query and environmental data.</p>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return html_content
+
 # ==================== MAIN APP ====================
 
 def main():
@@ -707,18 +1033,44 @@ def main():
                     if savings > 0 and best_alt:
                         annual_savings = savings * 365
                         trees_saved = int(annual_savings / 21)
-                        st.markdown(f"""
-                        <div class="impact-banner">
-                            <h2><span class='icon-animated'>🌟</span> Your Annual Impact Potential</h2>
-                            <p style="font-size: 1.3rem; margin: 1rem 0; color: white;">
-                                By switching to <strong>{best_alt['Activity']}</strong>, you could save:
-                            </p>
-                            <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                                <div><div style="font-size: 3rem; font-weight: 800;">{annual_savings:.0f}</div><div style="font-size: 1.1rem; opacity: 0.95;">kg CO₂ per year</div></div>
-                                <div><div style="font-size: 3rem; font-weight: 800;">{trees_saved}</div><div style="font-size: 1.1rem; opacity: 0.95;">Trees Equivalent</div></div>
+                        
+                        # Add download button for PDF
+                        col_impact1, col_impact2 = st.columns([4, 1])
+                        
+                        with col_impact1:
+                            st.markdown(f"""
+                            <div class="impact-banner">
+                                <h2><span class='icon-animated'>🌟</span> Your Annual Impact Potential</h2>
+                                <p style="font-size: 1.3rem; margin: 1rem 0; color: white;">
+                                    By switching to <strong>{best_alt['Activity']}</strong>, you could save:
+                                </p>
+                                <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                                    <div><div style="font-size: 3rem; font-weight: 800;">{annual_savings:.0f}</div><div style="font-size: 1.1rem; opacity: 0.95;">kg CO₂ per year</div></div>
+                                    <div><div style="font-size: 3rem; font-weight: 800;">{trees_saved}</div><div style="font-size: 1.1rem; opacity: 0.95;">Trees Equivalent</div></div>
+                                </div>
                             </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
+                        
+                        with col_impact2:
+                            # Generate PDF
+                            user_query_text = [m['content'] for m in st.session_state.conversation_history if m['role'] == 'user'][-1]
+                            html_report = generate_pdf_report(
+                                user_query_text,
+                                msg['content'],
+                                current_act,
+                                alts,
+                                savings
+                            )
+                            
+                            if html_report:
+                                st.download_button(
+                                    label="📥 Download PDF",
+                                    data=html_report,
+                                    file_name=f"CO2_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                                    mime="text/html",
+                                    key=f"download_{idx}",
+                                    use_container_width=True
+                                )
         
         st.markdown('</div>', unsafe_allow_html=True)
     

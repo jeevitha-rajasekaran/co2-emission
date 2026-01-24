@@ -1,5 +1,5 @@
 """
-CO₂ Reduction AI Agent - HuggingFace Version (Streamlit Cloud Optimized)
+CO₂ Reduction AI Agent - Enhanced with Charts After Every Query
 """
 
 import streamlit as st
@@ -60,7 +60,6 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
     
-    /* Main body background - subtle gradient instead of white */
     .main {
         background: linear-gradient(180deg, #f0fdf4 100%, #e0f2fe 50%, #fef3c7 0%);
     }
@@ -82,7 +81,6 @@ st.markdown("""
     }
     @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:.7;} }
     
-    /* Animated Icons */
     @keyframes bounce {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-10px); }
@@ -107,7 +105,6 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stDeployButton {display: none;}
-    
     [data-testid="stSidebar"] { display: none; }
     
     .hero-section {
@@ -206,6 +203,14 @@ st.markdown("""
 
     .copyright-footer { background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%); padding: 2rem 0; text-align: center; margin: 4rem -6rem 0 -6rem; border-radius: 0; }
     .copyright-text { color: rgba(255, 255, 255, 0.95); font-size: 1rem; margin: 0; font-weight: 400; letter-spacing: 0.5px; }
+    
+    .chart-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin: 1.5rem 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -238,7 +243,6 @@ SUSTAINABILITY_TIPS = [
 # ==================== IMPROVED QUERY PARSING ====================
 
 def parse_query_category(query: str) -> str:
-    """Identify which category the query is about"""
     query_lower = query.lower()
     
     food_keywords = ['food', 'diet', 'meat', 'vegetarian', 'vegan', 'eat', 'eating', 'meal', 'plant-based', 'consume', 'consumption']
@@ -261,7 +265,6 @@ def parse_query_category(query: str) -> str:
     return "General"
 
 def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
-    """Enhanced activity finder with better matching"""
     query_lower = query.lower()
     category = parse_query_category(query)
     
@@ -330,8 +333,6 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
 # ==================== INTELLIGENT RESPONSE GENERATOR ====================
 
 def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> tuple:
-    """Generate intelligent response without relying on LLM agent"""
-    
     category = parse_query_category(query)
     current_activity = find_activity_from_query(query, CO2_DATA)
     
@@ -396,14 +397,12 @@ Based on your query about {category.lower() if category != "General" else "susta
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================
 
 def initialize_llm():
-    """Initialize HuggingFace LLM"""
     if not LANGCHAIN_AVAILABLE:
         return None
     
     try:
         hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not hf_token:
-            # Try getting from Streamlit secrets
             try:
                 hf_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")
             except:
@@ -428,8 +427,6 @@ def initialize_llm():
 def initialize_vector_store():
     try:
         embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-        
-        # Simple ChromaDB client (works on Streamlit Cloud)
         chroma_client = chromadb.Client()
         
         try:
@@ -462,29 +459,58 @@ def retrieve_relevant_tips(query, embedding_model, collection, n_results=3):
     except:
         return []
 
-# ==================== CHART FUNCTIONS ====================
+# ==================== ENHANCED CHART FUNCTIONS ====================
 
 def create_comparison_chart(current_activity, alternatives):
+    """Create beautiful horizontal bar chart"""
     activities = [current_activity['Activity']] + [alt['Activity'] for alt in alternatives]
     emissions = [current_activity['Avg_CO2_Emission(kg/day)']] + [alt['Avg_CO2_Emission(kg/day)'] for alt in alternatives]
     colors = ['#ef4444'] + ['#10b981'] * len(alternatives)
-    fig = go.Figure(data=[
-        go.Bar(
-            x=activities, y=emissions, marker_color=colors,
-            marker_line_color='white', marker_line_width=2,
-            text=[f"{e} kg" for e in emissions], textposition='outside',
-            textfont=dict(size=14, color='#1f2937', weight='bold')
-        )
-    ])
+    
+    fig = go.Figure()
+    
+    for i, (activity, emission, color) in enumerate(zip(activities, emissions, colors)):
+        fig.add_trace(go.Bar(
+            y=[activity],
+            x=[emission],
+            orientation='h',
+            marker=dict(color=color, line=dict(color='white', width=2)),
+            text=f"{emission} kg",
+            textposition='outside',
+            textfont=dict(size=14, color='#1f2937', family='Inter', weight='bold'),
+            hovertemplate=f"<b>{activity}</b><br>CO₂: {emission} kg/day<extra></extra>",
+            showlegend=False
+        ))
+    
     fig.update_layout(
-        title=dict(text="CO₂ Emissions Comparison", font=dict(size=24, color='#1f2937', family='Inter')),
-        xaxis_title="Activity", yaxis_title="CO₂ Emissions (kg/day)",
-        xaxis=dict(showgrid=False, showline=True, linewidth=2, linecolor='#e5e7eb'),
-        yaxis=dict(showgrid=True, gridwidth=1, gridcolor='#f3f4f6'),
-        height=500, showlegend=False,
-        plot_bgcolor='rgba(240, 253, 244, 0.3)', paper_bgcolor='white',
-        font=dict(family='Inter', size=12), margin=dict(t=80, b=80, l=60, r=60)
+        title=dict(
+            text="<b>CO₂ Emissions Comparison</b>",
+            font=dict(size=24, color='#1f2937', family='Inter'),
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis=dict(
+            title="CO₂ Emissions (kg/day)",
+            showgrid=True,
+            gridwidth=1,
+            gridcolor='#f3f4f6',
+            showline=True,
+            linewidth=2,
+            linecolor='#e5e7eb'
+        ),
+        yaxis=dict(
+            title="",
+            showgrid=False,
+            autorange='reversed'
+        ),
+        height=400,
+        plot_bgcolor='rgba(240, 253, 244, 0.3)',
+        paper_bgcolor='white',
+        font=dict(family='Inter', size=12),
+        margin=dict(t=80, b=60, l=200, r=100),
+        barmode='overlay'
     )
+    
     return fig
 
 def create_pie_chart(data):
@@ -581,7 +607,6 @@ def main():
             clear_chat = st.button("🗑️ Clear Chat", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # FIXED: Removed chat_memory.clear() bug
         if clear_chat:
             st.session_state.conversation_history = []
             st.session_state.total_savings = 0
@@ -612,15 +637,14 @@ def main():
             st.warning("⚠️ HuggingFace LLM: Offline Mode")
         
         st.markdown("#### <span class='icon-animated'>📊</span> Quick Stats", unsafe_allow_html=True)
-        st.info(f"🌍 Global Target:\n < 6 kg CO₂/person/day by 2030")
+        st.info(f"🌍 Global Target:\n< 6 kg CO₂/person/day by 2030")
         st.success(f"🌳 Tree Impact:\n1 tree = 21 kg CO₂/year")
     
-    # Show this BEFORE processing new query
+    # Display conversation history with charts
     if st.session_state.conversation_history:
         st.markdown("---")
         st.markdown("## <span class='icon-animated'>💬</span> Conversation History", unsafe_allow_html=True)
         
-        # Add a container with subtle styling
         st.markdown("""
         <style>
         .conversation-wrapper {
@@ -642,7 +666,7 @@ def main():
         st.markdown('<div class="conversation-wrapper">', unsafe_allow_html=True)
         st.markdown(f'<div class="message-count">📊 Total Messages: {len(st.session_state.conversation_history)}</div>', unsafe_allow_html=True)
         
-        # Display ALL messages - not just last 5
+        # Display all messages with charts
         for idx, msg in enumerate(st.session_state.conversation_history):
             if msg['role'] == 'user':
                 st.markdown(f"""
@@ -656,6 +680,45 @@ def main():
                     <strong>🤖 AI Assistant:</strong><br>{msg['content']}
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # Display chart after each AI response
+                if 'chart_data' in msg and msg['chart_data']['current_activity']:
+                    current_act = msg['chart_data']['current_activity']
+                    alts = msg['chart_data']['alternatives']
+                    savings = msg['chart_data']['savings']
+                    
+                    # Show metrics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Current Emissions", f"{current_act['Avg_CO2_Emission(kg/day)']} kg/day")
+                    with col2:
+                        best_alt = min(alts, key=lambda x: x['Avg_CO2_Emission(kg/day)']) if alts else None
+                        if best_alt:
+                            st.metric("Best Alternative", f"{best_alt['Avg_CO2_Emission(kg/day)']} kg/day", delta=f"-{savings:.2f} kg")
+                    with col3:
+                        if savings > 0:
+                            reduction_pct = (savings / current_act['Avg_CO2_Emission(kg/day)']) * 100
+                            st.metric("Reduction", f"{reduction_pct:.1f}%", delta=f"-{savings:.2f} kg/day")
+                    
+                    # Show chart
+                    st.plotly_chart(create_comparison_chart(current_act, alts[:3]), use_container_width=True, key=f"chart_{idx}")
+                    
+                    # Impact banner
+                    if savings > 0 and best_alt:
+                        annual_savings = savings * 365
+                        trees_saved = int(annual_savings / 21)
+                        st.markdown(f"""
+                        <div class="impact-banner">
+                            <h2><span class='icon-animated'>🌟</span> Your Annual Impact Potential</h2>
+                            <p style="font-size: 1.3rem; margin: 1rem 0; color: white;">
+                                By switching to <strong>{best_alt['Activity']}</strong>, you could save:
+                            </p>
+                            <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                                <div><div style="font-size: 3rem; font-weight: 800;">{annual_savings:.0f}</div><div style="font-size: 1.1rem; opacity: 0.95;">kg CO₂ per year</div></div>
+                                <div><div style="font-size: 3rem; font-weight: 800;">{trees_saved}</div><div style="font-size: 1.1rem; opacity: 0.95;">Trees Equivalent</div></div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
     
@@ -675,58 +738,26 @@ def main():
                 query_to_process, CO2_DATA, relevant_tips
             )
             
-            # Add assistant response
-            st.session_state.conversation_history.append({'role': 'assistant', 'content': ai_response})
-            st.session_state.queries_count += 1
-            
             # Calculate savings
+            savings = 0
             if current_activity and alternatives:
                 best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
                 savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alt['Avg_CO2_Emission(kg/day)']
                 if savings > 0:
                     st.session_state.total_savings += savings
-        
-        # Show latest response prominently
-        st.markdown("---")
-        st.markdown('<div class="results-section">', unsafe_allow_html=True)
-        st.markdown("## <span class='icon-animated'>📋</span> Latest AI Response", unsafe_allow_html=True)
-        st.markdown(ai_response, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Show visualizations if applicable
-        if current_activity and alternatives:
-            st.markdown("---")
-            st.markdown("## <span class='icon-animated'>📊</span> Detailed Impact Analysis", unsafe_allow_html=True)
             
-            best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-            savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alt['Avg_CO2_Emission(kg/day)']
+            # Add assistant response with chart data
+            st.session_state.conversation_history.append({
+                'role': 'assistant', 
+                'content': ai_response,
+                'chart_data': {
+                    'current_activity': current_activity,
+                    'alternatives': alternatives,
+                    'savings': savings
+                }
+            })
             
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Current Emissions", f"{current_activity['Avg_CO2_Emission(kg/day)']} kg/day")
-            with col2:
-                st.metric("Best Alternative", f"{best_alt['Avg_CO2_Emission(kg/day)']} kg/day", delta=f"-{savings:.2f} kg")
-            with col3:
-                reduction_pct = (savings / current_activity['Avg_CO2_Emission(kg/day)']) * 100 if current_activity['Avg_CO2_Emission(kg/day)'] > 0 else 0
-                st.metric("Reduction", f"{reduction_pct:.1f}%", delta=f"-{savings:.2f} kg/day")
-            
-            st.plotly_chart(create_comparison_chart(current_activity, alternatives[:3]), use_container_width=True)
-            
-            if savings > 0:
-                annual_savings = savings * 365
-                trees_saved = annual_savings / 21
-                st.markdown(f"""
-                <div class="impact-banner">
-                    <h2><span class='icon-animated'>🌟</span> Your Annual Impact Potential</h2>
-                    <p style="font-size: 1.3rem; margin: 1rem 0; color: white;">
-                        By switching to <strong>{best_alt['Activity']}</strong>, you could save:
-                    </p>
-                    <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem; flex-wrap: wrap;">
-                        <div><div style="font-size: 3rem; font-weight: 800;">{annual_savings:.0f}</div><div style="font-size: 1.1rem; opacity: 0.95;">kg CO₂ per year</div></div>
-                        <div><div style="font-size: 3rem; font-weight: 800;">{int(trees_saved)}</div><div style="font-size: 1.1rem; opacity: 0.95;">Trees Equivalent</div></div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+            st.session_state.queries_count += 1
         
         # Clear the input for next query
         st.session_state.user_query = ''
@@ -764,7 +795,7 @@ def main():
         <div class="tech-item"><span class="tech-icon icon-animated">📊</span><span>Real-time Analysis</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">🗄️</span><span>Vector Search Engine</span></div>
         <div class="tech-item"><span class="tech-icon icon-animated">🤗</span><span>AI-Powered Insights</span></div>
-        <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Plotly</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Plotly Charts</span></div>
         """, unsafe_allow_html=True)
     with footer_col3:
         st.markdown("### <span class='icon-animated'>🎯</span> Quick Facts", unsafe_allow_html=True)

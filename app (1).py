@@ -532,7 +532,7 @@ def create_pie_chart(data):
 # ==================== PDF GENERATION FUNCTIONS ====================
 
 def generate_pdf_report(user_query, ai_response, current_activity, alternatives, savings):
-    """Generate HTML-based PDF report"""
+    """Generate HTML-based PDF report without kaleido dependency"""
     
     if not current_activity or not alternatives:
         return None
@@ -542,16 +542,36 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
     trees_saved = int(annual_savings / 21)
     reduction_pct = (savings / current_activity['Avg_CO2_Emission(kg/day)']) * 100 if savings > 0 else 0
     
-    # Generate chart as image
-    fig = create_comparison_chart(current_activity, alternatives[:3])
-    
-    # Convert plotly chart to image (base64)
-    img_bytes = fig.to_image(format="png", width=1200, height=500)
-    img_base64 = base64.b64encode(img_bytes).decode()
-    
     # Clean AI response for PDF (remove HTML tags)
     clean_response = re.sub('<[^<]+?>', '', ai_response)
     clean_response = clean_response.replace('**', '')
+    
+    # Create simple bar chart using HTML/CSS instead of image
+    activities_data = [
+        (current_activity['Activity'], current_activity['Avg_CO2_Emission(kg/day)'], '#ef4444')
+    ] + [
+        (alt['Activity'], alt['Avg_CO2_Emission(kg/day)'], '#10b981') 
+        for alt in alternatives[:3]
+    ]
+    
+    max_emission = max([item[1] for item in activities_data])
+    
+    chart_html = '<div style="margin: 20px 0;">'
+    for activity, emission, color in activities_data:
+        bar_width = (emission / max_emission) * 100
+        chart_html += f'''
+        <div style="margin: 15px 0;">
+            <div style="font-size: 14px; color: #374151; margin-bottom: 5px; font-weight: 600;">{activity}</div>
+            <div style="display: flex; align-items: center;">
+                <div style="background: {color}; height: 40px; width: {bar_width}%; border-radius: 6px; 
+                            display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; 
+                            color: white; font-weight: 700; min-width: 80px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    {emission} kg
+                </div>
+            </div>
+        </div>
+        '''
+    chart_html += '</div>'
     
     # Create HTML report
     html_content = f"""
@@ -577,6 +597,7 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
                 border-radius: 20px;
                 text-align: center;
                 margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
             }}
             
             .header h1 {{
@@ -597,6 +618,7 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
                 border-radius: 16px;
                 padding: 30px;
                 margin-bottom: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             }}
             
             .section h2 {{
@@ -637,6 +659,7 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
                 border-radius: 12px;
                 padding: 20px;
                 text-align: center;
+                box-shadow: 0 2px 12px rgba(16, 185, 129, 0.1);
             }}
             
             .metric-card .value {{
@@ -655,18 +678,19 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
             }}
             
             .chart-container {{
-                text-align: center;
-                margin: 30px 0;
                 background: white;
-                padding: 20px;
+                padding: 30px;
                 border-radius: 12px;
                 border: 2px solid #e5e7eb;
+                margin: 20px 0;
             }}
             
-            .chart-container img {{
-                max-width: 100%;
-                height: auto;
-                border-radius: 8px;
+            .chart-title {{
+                font-size: 20px;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 20px;
+                text-align: center;
             }}
             
             .impact-banner {{
@@ -676,6 +700,7 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
                 border-radius: 16px;
                 text-align: center;
                 margin: 30px 0;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
             }}
             
             .impact-banner h2 {{
@@ -752,6 +777,15 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
                 font-size: 15px;
                 white-space: pre-wrap;
             }}
+            
+            @media print {{
+                body {{
+                    padding: 20px;
+                }}
+                .section {{
+                    page-break-inside: avoid;
+                }}
+            }}
         </style>
     </head>
     <body>
@@ -797,7 +831,8 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
         <div class="section">
             <h2>📈 Emissions Comparison Chart</h2>
             <div class="chart-container">
-                <img src="data:image/png;base64,{img_base64}" alt="CO2 Comparison Chart">
+                <div class="chart-title">CO₂ Emissions Comparison (kg/day)</div>
+                {chart_html}
             </div>
         </div>
         
@@ -846,6 +881,9 @@ def generate_pdf_report(user_query, ai_response, current_activity, alternatives,
         <div class="footer">
             <p><strong>© 2025 CO₂ Reduction Platform | Powered by AI 🤖</strong></p>
             <p>This report was generated automatically based on your query and environmental data.</p>
+            <p style="margin-top: 15px; font-size: 11px; color: #9ca3af;">
+                To save as PDF: Press Ctrl+P (Windows) or Cmd+P (Mac), then select "Save as PDF"
+            </p>
         </div>
     </body>
     </html>

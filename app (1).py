@@ -1143,6 +1143,34 @@ def main():
                                     key=f"download_{idx}",
                                     use_container_width=True
                                 )
+                        
+                        # Long-term Goals Section
+                        if savings > 0 and best_alt:
+                            st.markdown(f"""
+                            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
+                                        border-radius: 16px; padding: 2rem; margin-top: 2rem; 
+                                        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);">
+                                <h3 style="color: white; margin-bottom: 1rem; font-size: 1.5rem;">
+                                    <span class='icon-animated'>🎯</span> Long-Term Goals
+                                </h3>
+                                <div style="color: white; font-size: 1.1rem; line-height: 1.8;">
+                                    <p style="margin: 0.5rem 0;">
+                                        <strong>🌱 5-Year Impact:</strong> By consistently using {best_alt['Activity']}, 
+                                        you could reduce <strong>{annual_savings * 5:.0f} kg CO₂</strong> 
+                                        (equivalent to <strong>{trees_saved * 5}</strong> trees planted)
+                                    </p>
+                                    <p style="margin: 0.5rem 0;">
+                                        <strong>🌍 10-Year Vision:</strong> Over a decade, your sustainable choice 
+                                        could save <strong>{annual_savings * 10:.0f} kg CO₂</strong>, 
+                                        making a significant environmental contribution
+                                    </p>
+                                    <p style="margin: 0.5rem 0;">
+                                        <strong>💪 Lifestyle Transformation:</strong> This change contributes to achieving 
+                                        the global target of less than 6 kg CO₂ per person per day by 2030
+                                    </p>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
     

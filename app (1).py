@@ -440,6 +440,11 @@ Based on your query about {category.lower() if category != "General" else "susta
         response += "\n\n**📚 Additional Insights:**\n\n"
         response += relevant_tips[0]
     
+    # Clean any stray HTML tags that might have gotten in
+    import re
+    response = re.sub(r'</?div[^>]*>', '', response)
+    response = re.sub(r'</?span[^>]*>', '', response)
+    
     return response, current_activity, alternatives
 
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================

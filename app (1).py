@@ -440,10 +440,13 @@ Based on your query about {category.lower() if category != "General" else "susta
         response += "\n\n**📚 Additional Insights:**\n\n"
         response += relevant_tips[0]
     
-    # Clean any stray HTML tags that might have gotten in
+    # Clean any stray HTML tags or literal HTML text that might have gotten in
     import re
     response = re.sub(r'</?div[^>]*>', '', response)
     response = re.sub(r'</?span[^>]*>', '', response)
+    # Also remove literal "</div>" text if it appears
+    response = response.replace('</div>', '').replace('<div>', '')
+    response = response.replace('</span>', '').replace('<span>', '')
     
     return response, current_activity, alternatives
 
@@ -1090,9 +1093,11 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
             else:
+                # Clean the content before displaying
+                clean_content = msg['content'].replace('</div>', '').replace('<div>', '')
                 st.markdown(f"""
                 <div class="chat-message assistant-message">
-                    <strong>🤖 AI Assistant:</strong><br>{msg['content']}
+                    <strong>🤖 AI Assistant:</strong><br>{clean_content}
                 </div>
                 """, unsafe_allow_html=True)
                 

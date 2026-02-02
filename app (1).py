@@ -400,7 +400,7 @@ Based on your query about {category.lower() if category != "General" else "susta
     alternatives = [item for item in category_items if item != current_activity]
     alternatives.sort(key=lambda x: x['Avg_CO2_Emission(kg/day)'])
     
-    response = f"""**<span class="icon-animated">{current_activity['Icon']}</span> Your Current Activity Analysis**
+    response = f"""**{current_activity['Icon']} Your Current Activity Analysis**
 
 **Current Activity:** {current_activity['Activity']} {current_activity['Icon']}
 **Category:** {current_activity['Category']}
@@ -408,7 +408,7 @@ Based on your query about {category.lower() if category != "General" else "susta
 
 ---
 
-**<span class="icon-animated">💡</span> Recommended Alternatives:**
+**💡 Recommended Alternatives:**
 
 """
     
@@ -431,13 +431,13 @@ Based on your query about {category.lower() if category != "General" else "susta
         if savings > 0:
             annual_savings = savings * 365
             trees_saved = int(annual_savings / 21)
-            response += f"\n**<span class='icon-animated'>🎯</span> Long-Term Goals:**\n\n"
+            response += f"\n**🎯 Long-Term Goals:**\n\n"
             response += f"🌱 **5-Year Impact:** By consistently using {best_alt['Activity']}, you could reduce **{annual_savings * 5:.0f} kg CO₂** (equivalent to **{trees_saved * 5} trees** planted)\n\n"
             response += f"🌍 **10-Year Vision:** Over a decade, your sustainable choice could save **{annual_savings * 10:.0f} kg CO₂**, making a significant environmental contribution\n\n"
             response += f"💪 **Lifestyle Transformation:** This change contributes to achieving the global target of less than 6 kg CO₂ per person per day by 2030\n"
     
     if relevant_tips:
-        response += "\n\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
+        response += "\n\n**📚 Additional Insights:**\n\n"
         response += relevant_tips[0]
     
     return response, current_activity, alternatives

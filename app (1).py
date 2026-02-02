@@ -1,3 +1,4 @@
+app-1-FINAL-CORRECTED.py
 """
 CO₂ Reduction AI Agent - Enhanced with Charts After Every Query + PDF Export
 """
@@ -316,7 +317,7 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
     if category == "Cooling":
         if 'ac' in query_lower or 'air condition' in query_lower or 'a/c' in query_lower:
             for item in CO2_DATA:
-                if 'AC usage' in item['Activity']:  # Match the high-emission AC
+                if 'AC usage' in item['Activity']:
                     return item
         if 'fan' in query_lower:
             for item in CO2_DATA:
@@ -364,12 +365,11 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
 
     return None
 
-# ==================== INTELLIGENT RESPONSE GENERATOR ====================
-
+# ==================== INTELLIGENT RESPONSE GENERATOR (UPDATED) ====================
 def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> tuple:
     category = parse_query_category(query)
     current_activity = find_activity_from_query(query, CO2_DATA)
-    
+
     # UPDATED: Added icons for new categories
     category_icons = {
         "Transport": '🚗',
@@ -379,7 +379,7 @@ def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> 
         "Lifestyle": '🛍️',
         "General": '🌍'
     }
-    
+
     if not current_activity:
         response = f"""**{category_icons.get(category, category_icons['General'])} Sustainability Guidance**
 
@@ -388,19 +388,25 @@ Based on your query about {category.lower() if category != "General" else "susta
 """
         if relevant_tips:
             for idx, tip in enumerate(relevant_tips[:3], 1):
-                response += f"{idx}. {tip}\n\n"
+                response += f"{idx}. {tip}
+
+"
         else:
-            response += "• Focus on reducing emissions in transport, household energy, and food choices\n"
-            response += "• Small daily changes can lead to significant annual CO₂ reductions\n"
-            response += "• Consider alternatives that align with your lifestyle and location\n"
-        
+            response += "• Focus on reducing emissions in transport, household energy, and food choices
+"
+            response += "• Small daily changes can lead to significant annual CO₂ reductions
+"
+            response += "• Consider alternatives that align with your lifestyle and location
+"
+
         return response, None, []
-    
+
+    # Get alternatives from the SAME category
     category_items = [item for item in CO2_DATA if item['Category'] == current_activity['Category']]
     alternatives = [item for item in category_items if item != current_activity]
     alternatives.sort(key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-    
-    response = f"""**<span class="icon-animated">{current_activity['Icon']}</span> Your Current Activity Analysis**
+
+    response = f"""**{current_activity['Icon']} Your Current Activity Analysis**
 
 **Current Activity:** {current_activity['Activity']} {current_activity['Icon']}
 **Category:** {current_activity['Category']}
@@ -408,26 +414,58 @@ Based on your query about {category.lower() if category != "General" else "susta
 
 ---
 
-**<span class="icon-animated">💡</span> Recommended Alternatives:**
+**💡 Recommended Alternatives:**
 
 """
-    
+
     for idx, alt in enumerate(alternatives[:3], 1):
         emission_diff = current_activity['Avg_CO2_Emission(kg/day)'] - alt['Avg_CO2_Emission(kg/day)']
         if emission_diff > 0:
             reduction_pct = (emission_diff / current_activity['Avg_CO2_Emission(kg/day)']) * 100
             annual_savings = emission_diff * 365
             trees = int(annual_savings / 21)
-            response += f"{idx}. **{alt['Activity']}** {alt['Icon']}\n"
-            response += f"   • Reduces to: {alt['Avg_CO2_Emission(kg/day)']} kg CO₂/day\n"
-            response += f"   • Daily savings: {emission_diff:.2f} kg CO₂\n"
-            response += f"   • Reduction: {reduction_pct:.0f}%\n"
-            response += f"   • Annual impact: {annual_savings:.0f} kg CO₂ (≈ {trees} trees planted)\n\n"
-    
-    if relevant_tips:
-        response += "\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
+
+            response += f"{idx}. **{alt['Activity']}** {alt['Icon']}
+"
+            response += f"   • Reduces to: {alt['Avg_CO2_Emission(kg/day)']} kg CO₂/day
+"
+            response += f"   • Daily savings: {emission_diff:.2f} kg CO₂
+"
+            response += f"   • Reduction: {reduction_pct:.0f}%
+"
+            response += f"   • Annual impact: {annual_savings:.0f} kg CO₂ (≈ {trees} trees planted)
+
+"
+
+    # NEW: ALWAYS show Long-term Sustainability Goal
+    response += "
+---
+
+**📚 Long-term Sustainability Goal:**
+
+"
+
+    # Category-specific long-term goals
+    category_goals = {
+        "Cooling": "**Long-term target:** Reduce cooling energy consumption by 50% through efficient AC use (24°C setting, proper insulation, smart scheduling) combined with natural ventilation. This sustainable approach can save over 1,000 kg CO₂ annually and significantly reduce energy bills.",
+
+        "Lighting": "**Long-term target:** Complete transition to LED lighting across all rooms and outdoor spaces. A full household switch reduces lighting emissions by 75% and saves 50+ kg CO₂ per year while providing better quality light.",
+
+        "Transport": "**Long-term target:** Reduce personal vehicle dependency by 30% through a mix of carpooling, public transport, and cycling for distances under 5 km. This multi-modal approach can save over 500 kg CO₂ annually while improving health and reducing costs.",
+
+        "Food": "**Long-term target:** Adopt a flexitarian diet by reducing meat consumption by 50% and increasing plant-based meals. This balanced approach can save over 900 kg CO₂ per year while maintaining nutritional needs and reducing food costs.",
+
+        "Lifestyle": "**Long-term target:** Shift 70% of purchases to local shopping, reduce packaging waste, and adopt a circular economy mindset (reuse, repair, recycle). This can save 250+ kg CO₂ annually while supporting local businesses and reducing waste."
+    }
+
+    # Use relevant tips if available, otherwise use category-specific goals
+    if relevant_tips and len(relevant_tips) > 0:
         response += relevant_tips[0]
-    
+    else:
+        goal = category_goals.get(current_activity['Category'], 
+                                  "**Long-term target:** Reduce your overall carbon footprint by 20% in the next 6 months through consistent sustainable choices across transport, energy, and lifestyle.")
+        response += goal
+
     return response, current_activity, alternatives
 
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================

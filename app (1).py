@@ -424,8 +424,20 @@ Based on your query about {category.lower() if category != "General" else "susta
             response += f"   • Reduction: {reduction_pct:.0f}%\n"
             response += f"   • Annual impact: {annual_savings:.0f} kg CO₂ (≈ {trees} trees planted)\n\n"
     
+    # Add Long-Term Goals section RIGHT AFTER alternatives
+    if alternatives:
+        best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+        savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alt['Avg_CO2_Emission(kg/day)']
+        if savings > 0:
+            annual_savings = savings * 365
+            trees_saved = int(annual_savings / 21)
+            response += f"\n**<span class='icon-animated'>🎯</span> Long-Term Goals:**\n\n"
+            response += f"🌱 **5-Year Impact:** By consistently using {best_alt['Activity']}, you could reduce **{annual_savings * 5:.0f} kg CO₂** (equivalent to **{trees_saved * 5} trees** planted)\n\n"
+            response += f"🌍 **10-Year Vision:** Over a decade, your sustainable choice could save **{annual_savings * 10:.0f} kg CO₂**, making a significant environmental contribution\n\n"
+            response += f"💪 **Lifestyle Transformation:** This change contributes to achieving the global target of less than 6 kg CO₂ per person per day by 2030\n"
+    
     if relevant_tips:
-        response += "\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
+        response += "\n\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
         response += relevant_tips[0]
     
     return response, current_activity, alternatives
@@ -1143,34 +1155,6 @@ def main():
                                     key=f"download_{idx}",
                                     use_container_width=True
                                 )
-                        
-                        # Long-term Goals Section
-                        if savings > 0 and best_alt:
-                            st.markdown(f"""
-                            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); 
-                                        border-radius: 16px; padding: 2rem; margin-top: 2rem; 
-                                        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);">
-                                <h3 style="color: white; margin-bottom: 1rem; font-size: 1.5rem;">
-                                    <span class='icon-animated'>🎯</span> Long-Term Goals
-                                </h3>
-                                <div style="color: white; font-size: 1.1rem; line-height: 1.8;">
-                                    <p style="margin: 0.5rem 0;">
-                                        <strong>🌱 5-Year Impact:</strong> By consistently using {best_alt['Activity']}, 
-                                        you could reduce <strong>{annual_savings * 5:.0f} kg CO₂</strong> 
-                                        (equivalent to <strong>{trees_saved * 5}</strong> trees planted)
-                                    </p>
-                                    <p style="margin: 0.5rem 0;">
-                                        <strong>🌍 10-Year Vision:</strong> Over a decade, your sustainable choice 
-                                        could save <strong>{annual_savings * 10:.0f} kg CO₂</strong>, 
-                                        making a significant environmental contribution
-                                    </p>
-                                    <p style="margin: 0.5rem 0;">
-                                        <strong>💪 Lifestyle Transformation:</strong> This change contributes to achieving 
-                                        the global target of less than 6 kg CO₂ per person per day by 2030
-                                    </p>
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
     

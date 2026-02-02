@@ -216,20 +216,32 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ==================== DATA ====================
-
+# ==================== DATA (UPDATED WITH CORRECTIONS) ====================
 CO2_DATA = [
+    # Transport
     {"Activity": "Car (Petrol, 20 km)", "Avg_CO2_Emission(kg/day)": 4.6, "Category": "Transport", "Icon": "🚗"},
     {"Activity": "Bus (20 km)", "Avg_CO2_Emission(kg/day)": 1.2, "Category": "Transport", "Icon": "🚌"},
     {"Activity": "Bicycle (20 km)", "Avg_CO2_Emission(kg/day)": 0.0, "Category": "Transport", "Icon": "🚴"},
-    {"Activity": "AC usage (8 hrs/day)", "Avg_CO2_Emission(kg/day)": 6.0, "Category": "Household", "Icon": "❄️"},
-    {"Activity": "LED Bulb (5 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.05, "Category": "Household", "Icon": "💡"},
-    {"Activity": "Old Bulb (5 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.2, "Category": "Household", "Icon": "🔆"},
+
+    # Cooling (SEPARATED FROM HOUSEHOLD)
+    {"Activity": "AC usage (8 hrs/day)", "Avg_CO2_Emission(kg/day)": 6.0, "Category": "Cooling", "Icon": "❄️"},
+    {"Activity": "AC efficient use (24°C, 6 hrs/day)", "Avg_CO2_Emission(kg/day)": 3.5, "Category": "Cooling", "Icon": "🌡️"},
+    {"Activity": "Ceiling Fan (8 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.4, "Category": "Cooling", "Icon": "🌀"},
+    {"Activity": "Natural Ventilation", "Avg_CO2_Emission(kg/day)": 0.0, "Category": "Cooling", "Icon": "🪟"},
+
+    # Lighting (SEPARATED FROM HOUSEHOLD)
+    {"Activity": "LED Bulb (5 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.05, "Category": "Lighting", "Icon": "💡"},
+    {"Activity": "Old Bulb (5 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.2, "Category": "Lighting", "Icon": "🔆"},
+
+    # Food
     {"Activity": "Meat-based diet", "Avg_CO2_Emission(kg/day)": 7.0, "Category": "Food", "Icon": "🍖"},
     {"Activity": "Vegetarian diet", "Avg_CO2_Emission(kg/day)": 2.0, "Category": "Food", "Icon": "🥗"},
+
+    # Lifestyle
     {"Activity": "Online shopping (1)", "Avg_CO2_Emission(kg/day)": 1.0, "Category": "Lifestyle", "Icon": "📦"},
     {"Activity": "Local shopping (1)", "Avg_CO2_Emission(kg/day)": 0.3, "Category": "Lifestyle", "Icon": "🛍️"},
 ]
+
 
 SUSTAINABILITY_TIPS = [
     "For transport, switching from petrol cars to public buses can reduce CO2 emissions by up to 74%. Buses emit approximately 1.2 kg CO2 per 20 km compared to 4.6 kg for petrol cars.",
@@ -237,33 +249,35 @@ SUSTAINABILITY_TIPS = [
     "Carpooling reduces individual carbon footprint significantly. Sharing a ride with 3 colleagues reduces per-person emissions from 4.6 kg to about 1.5 kg CO2 per day.",
     "Electric vehicles (EVs) and hybrid models can reduce transport emissions by 60-80% compared to traditional petrol vehicles.",
     "LED bulbs use 75% less energy than traditional incandescent bulbs. Switching from old bulbs to LED can reduce emissions from 0.2 kg to 0.05 kg CO2 per day.",
-    "Air conditioning is a major household energy consumer. Using AC efficiently (setting temperature to 24°C, regular maintenance) can reduce emissions from 6.0 kg to 4.0 kg CO2 per day.",
+    "Air conditioning is a major household energy consumer. Using AC efficiently (setting temperature to 24°C, reducing usage to 6 hrs/day, regular maintenance) can reduce emissions from 6.0 kg to 3.5 kg CO2 per day. Ceiling fans are excellent low-emission alternatives at just 0.4 kg CO2 per day.",
     "Plant-based diets have significantly lower carbon footprints. Vegetarian diets emit about 2.0 kg CO2 per day compared to 7.0 kg for meat-based diets - a 71% reduction.",
     "Local shopping reduces packaging and transportation emissions. It emits 0.3 kg CO2 compared to 1.0 kg for online shopping due to reduced delivery logistics."
 ]
 
-# ==================== IMPROVED QUERY PARSING ====================
-
+# ==================== IMPROVED QUERY PARSING (UPDATED) ====================
 def parse_query_category(query: str) -> str:
     query_lower = query.lower()
-    
+
     food_keywords = ['food', 'diet', 'meat', 'vegetarian', 'vegan', 'eat', 'eating', 'meal', 'plant-based', 'consume', 'consumption']
     lifestyle_keywords = ['shop', 'shopping', 'online', 'local', 'purchase', 'buy', 'buying']
-    household_keywords = ['electricity', 'bulb', 'light', 'led', 'household', 'home', 'energy', 'power', 'appliance']
+
+    # UPDATED: Separate cooling and lighting keywords
+    cooling_keywords = [' ac ', 'air condition', 'air-condition', 'a/c', 'ac usage', 'ac use', 'cooling', 'fan', 'ceiling fan', 'ventilation']
+    lighting_keywords = ['bulb', 'light', 'led', 'lamp', 'lighting']
+
     transport_keywords = [' car ', ' drive', 'driving', 'petrol', ' bus ', 'bicycle', ' bike ', 'transport', 'commute', 'travel', 'vehicle', 'car,', 'car.', 'car?']
-    ac_keywords = [' ac ', 'air condition', 'air-condition', 'a/c', 'ac usage', 'ac use']
-    
+
     if any(kw in query_lower for kw in food_keywords):
         return "Food"
     elif any(kw in query_lower for kw in lifestyle_keywords):
         return "Lifestyle"
-    elif any(kw in query_lower for kw in ac_keywords):
-        return "Household"
-    elif any(kw in query_lower for kw in household_keywords):
-        return "Household"
+    elif any(kw in query_lower for kw in cooling_keywords):
+        return "Cooling"  # NEW
+    elif any(kw in query_lower for kw in lighting_keywords):
+        return "Lighting"  # NEW
     elif any(kw in query_lower for kw in transport_keywords):
         return "Transport"
-    
+
     return "General"
 
 def find_activity_from_query(query: str, CO2_DATA: list) -> dict:

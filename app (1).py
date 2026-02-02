@@ -283,7 +283,8 @@ def parse_query_category(query: str) -> str:
 def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
     query_lower = query.lower()
     category = parse_query_category(query)
-    
+
+    # Food category
     if category == "Food":
         if 'meat' in query_lower:
             for item in CO2_DATA:
@@ -296,7 +297,8 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
         food_items = [item for item in CO2_DATA if item['Category'] == 'Food']
         if food_items:
             return max(food_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-    
+
+    # Lifestyle category
     if category == "Lifestyle":
         if 'online' in query_lower:
             for item in CO2_DATA:
@@ -309,24 +311,40 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
         lifestyle_items = [item for item in CO2_DATA if item['Category'] == 'Lifestyle']
         if lifestyle_items:
             return max(lifestyle_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-    
-    if category == "Household":
-        if 'ac' in query_lower or 'air condition' in query_lower:
+
+    # UPDATED: Cooling category (NEW)
+    if category == "Cooling":
+        if 'ac' in query_lower or 'air condition' in query_lower or 'a/c' in query_lower:
             for item in CO2_DATA:
-                if 'AC' in item['Activity']:
+                if 'AC usage' in item['Activity']:  # Match the high-emission AC
                     return item
+        if 'fan' in query_lower:
+            for item in CO2_DATA:
+                if 'Fan' in item['Activity']:
+                    return item
+        if 'ventilation' in query_lower or 'natural' in query_lower:
+            for item in CO2_DATA:
+                if 'Ventilation' in item['Activity']:
+                    return item
+        cooling_items = [item for item in CO2_DATA if item['Category'] == 'Cooling']
+        if cooling_items:
+            return max(cooling_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+
+    # UPDATED: Lighting category (NEW)
+    if category == "Lighting":
         if 'led' in query_lower:
             for item in CO2_DATA:
                 if 'LED' in item['Activity']:
                     return item
-        if 'bulb' in query_lower and ('old' in query_lower or 'traditional' in query_lower):
+        if 'old' in query_lower or 'traditional' in query_lower:
             for item in CO2_DATA:
                 if 'Old Bulb' in item['Activity']:
                     return item
-        household_items = [item for item in CO2_DATA if item['Category'] == 'Household']
-        if household_items:
-            return max(household_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-    
+        lighting_items = [item for item in CO2_DATA if item['Category'] == 'Lighting']
+        if lighting_items:
+            return max(lighting_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+
+    # Transport category
     if category == "Transport":
         if 'car' in query_lower or 'petrol' in query_lower or 'drive' in query_lower or 'driving' in query_lower:
             for item in CO2_DATA:
@@ -343,7 +361,7 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
         transport_items = [item for item in CO2_DATA if item['Category'] == 'Transport']
         if transport_items:
             return max(transport_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-    
+
     return None
 
 # ==================== INTELLIGENT RESPONSE GENERATOR ====================
@@ -352,12 +370,14 @@ def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> 
     category = parse_query_category(query)
     current_activity = find_activity_from_query(query, CO2_DATA)
     
+    # UPDATED: Added icons for new categories
     category_icons = {
-        "Transport": '<span class="icon-animated">🚗</span>',
-        "Household": '<span class="icon-animated">🏠</span>',
-        "Food": '<span class="icon-animated">🥗</span>',
-        "Lifestyle": '<span class="icon-animated">🛍️</span>',
-        "General": '<span class="icon-animated">🌍</span>'
+        "Transport": '🚗',
+        "Cooling": '❄️',
+        "Lighting": '💡',
+        "Food": '🥗',
+        "Lifestyle": '🛍️',
+        "General": '🌍'
     }
     
     if not current_activity:

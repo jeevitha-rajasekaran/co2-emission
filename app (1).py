@@ -1,6 +1,5 @@
 """
 CO₂ Reduction AI Agent - Enhanced with Charts After Every Query + PDF Export
-COMPLETE CORRECTED VERSION
 """
 
 import streamlit as st
@@ -57,112 +56,174 @@ if 'use_llm' not in st.session_state:
 # ==================== PROFESSIONAL CSS ====================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
     * {
         font-family: 'Inter', sans-serif;
     }
-
+    
     .main {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 0;
+        background: linear-gradient(180deg, #f0fdf4 100%, #e0f2fe 50%, #fef3c7 0%);
     }
-
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #f0fdf4 100%, #e0f2fe 50%, #fef3c7 0%);
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:.7;} }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes wiggle {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-15deg); }
+        75% { transform: rotate(15deg); }
+    }
+    .icon-animated {
+        display: inline-block;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    .icon-animated:hover {
+        animation: wiggle 0.5s ease-in-out;
+    }
+    
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display: none;}
+    [data-testid="stSidebar"] { display: none; }
+    
+    .hero-section {
+        position: relative;
+        background: linear-gradient(135deg, rgba(52, 211, 153, 0.35) 0%, rgba(16, 185, 129, 0.35) 50%, rgba(5, 150, 105, 0.35) 100%),
+                    url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1600&q=80') center/cover;
+        padding: 5rem 2rem;
+        border-radius: 0;
+        margin: -6rem -6rem 3rem -6rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        filter: brightness(0.8);
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute; top: 10%; left: -10%;
+        width: 300px; height: 300px;
+        background: url('https://cdn-icons-png.flaticon.com/512/2913/2913133.png') no-repeat center;
+        background-size: contain; opacity: 0.2;
+        animation: slideFloat1 20s linear infinite; z-index: 1;
+    }
+    .hero-section::after {
+        content: '';
+        position: absolute; top: 60%; right: -10%;
+        width: 250px; height: 250px;
+        background: url('https://cdn-icons-png.flaticon.com/512/3649/3649180.png') no-repeat center;
+        background-size: contain; opacity: 0.2;
+        animation: slideFloat2 25s linear infinite; z-index: 1;
+    }
+    @keyframes slideFloat1 {
+        0% { transform: translateX(-100px) translateY(0) rotate(0deg); left: -10%; }
+        50% { transform: translateX(50vw) translateY(-30px) rotate(180deg); }
+        100% { transform: translateX(100vw) translateY(0) rotate(360deg); left: 110%; }
+    }
+    @keyframes slideFloat2 {
+        0% { transform: translateX(100px) translateY(0) rotate(0deg); right: -10%; }
+        50% { transform: translateX(-50vw) translateY(30px) rotate(-180deg); }
+        100% { transform: translateX(-100vw) translateY(0) rotate(-360deg); right: 110%; }
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; text-align: center; animation: fadeInUp 1s ease-out; }
+    .hero-title { font-size: 4rem; font-weight: 800; color: white !important; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5); line-height: 1.2; }
+    .hero-subtitle { font-size: 1.5rem; color: white !important; margin-bottom: 2rem; font-weight: 400; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
+    .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 2rem; flex-wrap: wrap; }
+    .hero-stat-item { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); padding: 1.5rem 2.5rem; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); animation: fadeInUp 1.2s ease-out; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+    .hero-stat-value { font-size: 2.5rem; font-weight: 700; color: white; display: block; }
+    .hero-stat-label { font-size: 0.9rem; color: rgba(255, 255, 255, 0.95); display: block; margin-top: 0.5rem; }
+
+    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 24px; padding: 2.5rem; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.8); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); animation: fadeInUp 0.8s ease-out; margin-bottom: 2rem; }
+    .glass-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.3); }
+
+    .chat-message { padding: 1.5rem; border-radius: 16px; margin-bottom: 1rem; animation: slideIn 0.3s ease-out; }
+    .user-message { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; margin-left: 20%; }
+    .assistant-message { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #1f2937; margin-right: 20%; border: 2px solid #86efac; }
+
+    .metric-card-pro { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); padding: 2rem; border-radius: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); border: 2px solid #e8f8f5; transition: all 0.3s ease; height: 100%; position: relative; overflow: hidden; }
+    .metric-card-pro::before { content: ''; position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); animation: float 6s ease-in-out infinite; }
+    .metric-card-pro:hover { transform: scale(1.05) rotate(-1deg); box-shadow: 0 12px 40px rgba(16, 185, 129, 0.2); border-color: #10b981; }
+    .metric-icon { font-size: 3rem; margin-bottom: 1rem; display: block; animation: float 3s ease-in-out infinite; }
+    .metric-value-pro { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 1rem 0; position: relative; }
+    .metric-label-pro { font-size: 0.95rem; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+
+    .input-section { background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); padding: 3rem; border-radius: 24px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); margin-bottom: 2rem; }
+    .section-title { font-size: 2rem; font-weight: 700; color: #1f2937; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .stTextArea textarea { border-radius: 16px; border: 2px solid #e5e7eb; padding: 1.5rem; font-size: 1.1rem; transition: all 0.3s ease; }
+    .stTextArea textarea:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
+    .stButton > button { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 1.2rem 3rem; font-size: 1.1rem; font-weight: 600; border-radius: 50px; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3); transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
+    .stButton > button:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4); background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+
+    .example-card { background: white; padding: 1.5rem; border-radius: 16px; border: 2px solid #e5e7eb; transition: all 0.3s ease; cursor: pointer; text-align: left; height: 100%; }
+    .example-card:hover { border-color: #10b981; transform: translateY(-4px); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15); }
+    .example-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+
+    .results-section { background: white; padding: 3rem; border-radius: 24px; box-shadow: 0 10px 50px rgba(0, 0, 0, 0.1); border: 2px solid #e8f8f5; animation: fadeInUp 0.6s ease-out; }
+
+    .impact-banner { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 2rem; border-radius: 20px; text-align: center; margin: 2rem 0; box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); }
+    .impact-banner h2 { color: white; margin: 0; font-size: 2rem; }
+
+    .llm-badge { display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-left: 1rem; }
+
+    .stSpinner > div { border-top-color: #10b981 !important; }
+
+    .tech-icon { font-size: 2.5rem; display: inline-block; margin: 0 0.5rem; }
+    .tech-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 0; font-size: 1.1rem; }
+
+    .additional-resources-section {
+        position: relative;
+        background:
+            linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)),
+            url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600&q=80") center/cover;
+        padding: 4rem 2rem;
+        margin: 4rem -6rem 0 -6rem;
+        border-radius: 0;
     }
 
-    h1, h2, h3 {
-        font-weight: 700 !important;
-        color: #1f2937 !important;
-    }
-
-    .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
-        max-width: 1200px !important;
-    }
-
-    .stTextInput input {
-        border-radius: 12px !important;
-        border: 2px solid #e5e7eb !important;
-        padding: 12px 16px !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .stTextInput input:focus {
-        border-color: #10b981 !important;
-        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
-    }
-
-    .stButton button {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 12px !important;
-        padding: 12px 32px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-    }
-
-    .stButton button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-    }
-
-    div[data-testid="stMetricValue"] {
-        font-size: 32px !important;
-        font-weight: 700 !important;
-        color: #10b981 !important;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        color: #6b7280 !important;
-    }
-
-    .css-1d391kg {
-        background: white !important;
-        border-radius: 16px !important;
-        padding: 24px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-    }
-
-    .stMarkdown {
-        color: #374151 !important;
-    }
-
-    code {
-        background: #f3f4f6 !important;
-        padding: 2px 6px !important;
-        border-radius: 4px !important;
-        color: #10b981 !important;
-    }
-
-    hr {
-        margin: 24px 0 !important;
-        border: none !important;
-        border-top: 1px solid #e5e7eb !important;
-    }
-
-    .element-container {
-        margin-bottom: 1rem !important;
+    .copyright-footer { background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%); padding: 2rem 0; text-align: center; margin: 4rem -6rem 0 -6rem; border-radius: 0; }
+    .copyright-text { color: rgba(255, 255, 255, 0.95); font-size: 1rem; margin: 0; font-weight: 400; letter-spacing: 0.5px; }
+    
+    .chart-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin: 1.5rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ==================== DATA (CORRECTED WITH AC ALTERNATIVES) ====================
+# ==================== DATA (UPDATED WITH CORRECTIONS) ====================
 CO2_DATA = [
     # Transport
     {"Activity": "Car (Petrol, 20 km)", "Avg_CO2_Emission(kg/day)": 4.6, "Category": "Transport", "Icon": "🚗"},
     {"Activity": "Bus (20 km)", "Avg_CO2_Emission(kg/day)": 1.2, "Category": "Transport", "Icon": "🚌"},
     {"Activity": "Bicycle (20 km)", "Avg_CO2_Emission(kg/day)": 0.0, "Category": "Transport", "Icon": "🚴"},
 
-    # Cooling (SEPARATED FROM HOUSEHOLD - FIX FOR AC ALTERNATIVES)
+    # Cooling (SEPARATED FROM HOUSEHOLD)
     {"Activity": "AC usage (8 hrs/day)", "Avg_CO2_Emission(kg/day)": 6.0, "Category": "Cooling", "Icon": "❄️"},
     {"Activity": "AC efficient use (24°C, 6 hrs/day)", "Avg_CO2_Emission(kg/day)": 3.5, "Category": "Cooling", "Icon": "🌡️"},
     {"Activity": "Ceiling Fan (8 hrs/day)", "Avg_CO2_Emission(kg/day)": 0.4, "Category": "Cooling", "Icon": "🌀"},
@@ -181,6 +242,7 @@ CO2_DATA = [
     {"Activity": "Local shopping (1)", "Avg_CO2_Emission(kg/day)": 0.3, "Category": "Lifestyle", "Icon": "🛍️"},
 ]
 
+
 SUSTAINABILITY_TIPS = [
     "For transport, switching from petrol cars to public buses can reduce CO2 emissions by up to 74%. Buses emit approximately 1.2 kg CO2 per 20 km compared to 4.6 kg for petrol cars.",
     "Cycling is the most eco-friendly transport option with zero CO2 emissions. It's ideal for distances under 10 km and also provides health benefits.",
@@ -192,7 +254,7 @@ SUSTAINABILITY_TIPS = [
     "Local shopping reduces packaging and transportation emissions. It emits 0.3 kg CO2 compared to 1.0 kg for online shopping due to reduced delivery logistics."
 ]
 
-# ==================== IMPROVED QUERY PARSING (UPDATED FOR NEW CATEGORIES) ====================
+# ==================== IMPROVED QUERY PARSING (UPDATED) ====================
 def parse_query_category(query: str) -> str:
     query_lower = query.lower()
 
@@ -250,11 +312,11 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
         if lifestyle_items:
             return max(lifestyle_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
 
-    # Cooling category (NEW - FIX FOR AC)
+    # UPDATED: Cooling category (NEW)
     if category == "Cooling":
         if 'ac' in query_lower or 'air condition' in query_lower or 'a/c' in query_lower:
             for item in CO2_DATA:
-                if 'AC usage' in item['Activity']:
+                if 'AC usage' in item['Activity']:  # Match the high-emission AC
                     return item
         if 'fan' in query_lower:
             for item in CO2_DATA:
@@ -268,7 +330,7 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
         if cooling_items:
             return max(cooling_items, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
 
-    # Lighting category (NEW)
+    # UPDATED: Lighting category (NEW)
     if category == "Lighting":
         if 'led' in query_lower:
             for item in CO2_DATA:
@@ -302,27 +364,28 @@ def find_activity_from_query(query: str, CO2_DATA: list) -> dict:
 
     return None
 
-# ==================== INTELLIGENT RESPONSE GENERATOR (FIXED SYNTAX + LONG-TERM GOALS) ====================
+# ==================== INTELLIGENT RESPONSE GENERATOR ====================
+
 def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> tuple:
     category = parse_query_category(query)
     current_activity = find_activity_from_query(query, CO2_DATA)
-
-    # Category icons
+    
+    # UPDATED: Added icons for new categories
     category_icons = {
-        "Transport": "🚗",
-        "Cooling": "❄️",
-        "Lighting": "💡",
-        "Food": "🥗",
-        "Lifestyle": "🛍️",
-        "General": "🌍"
+        "Transport": '🚗',
+        "Cooling": '❄️',
+        "Lighting": '💡',
+        "Food": '🥗',
+        "Lifestyle": '🛍️',
+        "General": '🌍'
     }
-
+    
     if not current_activity:
-        cat_name = category.lower() if category != "General" else "sustainability"
-        icon = category_icons.get(category, category_icons['General'])
-        response = f"**{icon} Sustainability Guidance**\n\n"
-        response += f"Based on your query about {cat_name}, here are key recommendations:\n\n"
+        response = f"""**{category_icons.get(category, category_icons['General'])} Sustainability Guidance**
 
+Based on your query about {category.lower() if category != "General" else "sustainability"}, here are key recommendations:
+
+"""
         if relevant_tips:
             for idx, tip in enumerate(relevant_tips[:3], 1):
                 response += f"{idx}. {tip}\n\n"
@@ -330,76 +393,49 @@ def generate_smart_response(query: str, CO2_DATA: list, relevant_tips: list) -> 
             response += "• Focus on reducing emissions in transport, household energy, and food choices\n"
             response += "• Small daily changes can lead to significant annual CO₂ reductions\n"
             response += "• Consider alternatives that align with your lifestyle and location\n"
-
+        
         return response, None, []
-
-    # Get alternatives from the SAME category
+    
     category_items = [item for item in CO2_DATA if item['Category'] == current_activity['Category']]
     alternatives = [item for item in category_items if item != current_activity]
     alternatives.sort(key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+    
+    response = f"""**<span class="icon-animated">{current_activity['Icon']}</span> Your Current Activity Analysis**
 
-    # Build response - FIXED STRING FORMATTING TO AVOID SYNTAX ERROR
-    icon = current_activity['Icon']
-    activity_name = current_activity['Activity']
-    category_name = current_activity['Category']
-    emissions = current_activity['Avg_CO2_Emission(kg/day)']
+**Current Activity:** {current_activity['Activity']} {current_activity['Icon']}
+**Category:** {current_activity['Category']}
+**Daily CO₂ Emissions:** {current_activity['Avg_CO2_Emission(kg/day)']} kg
 
-    response = f"**{icon} Your Current Activity Analysis**\n\n"
-    response += f"**Current Activity:** {activity_name} {icon}\n"
-    response += f"**Category:** {category_name}\n"
-    response += f"**Daily CO₂ Emissions:** {emissions} kg\n\n"
-    response += "---\n\n"
-    response += "**💡 Recommended Alternatives:**\n\n"
+---
 
+**<span class="icon-animated">💡</span> Recommended Alternatives:**
+
+"""
+    
     for idx, alt in enumerate(alternatives[:3], 1):
         emission_diff = current_activity['Avg_CO2_Emission(kg/day)'] - alt['Avg_CO2_Emission(kg/day)']
         if emission_diff > 0:
             reduction_pct = (emission_diff / current_activity['Avg_CO2_Emission(kg/day)']) * 100
             annual_savings = emission_diff * 365
             trees = int(annual_savings / 21)
-
-            alt_name = alt['Activity']
-            alt_icon = alt['Icon']
-            alt_emission = alt['Avg_CO2_Emission(kg/day)']
-
-            response += f"{idx}. **{alt_name}** {alt_icon}\n"
-            response += f"   • Reduces to: {alt_emission} kg CO₂/day\n"
+            response += f"{idx}. **{alt['Activity']}** {alt['Icon']}\n"
+            response += f"   • Reduces to: {alt['Avg_CO2_Emission(kg/day)']} kg CO₂/day\n"
             response += f"   • Daily savings: {emission_diff:.2f} kg CO₂\n"
             response += f"   • Reduction: {reduction_pct:.0f}%\n"
             response += f"   • Annual impact: {annual_savings:.0f} kg CO₂ (≈ {trees} trees planted)\n\n"
-
-    # ALWAYS show Long-term Sustainability Goal (NEW FEATURE)
-    response += "\n---\n\n"
-    response += "**📚 Long-term Sustainability Goal:**\n\n"
-
-    # Category-specific long-term goals
-    category_goals = {
-        "Cooling": "**Long-term target:** Reduce cooling energy consumption by 50% through efficient AC use (24°C setting, proper insulation, smart scheduling) combined with natural ventilation. This sustainable approach can save over 1,000 kg CO₂ annually and significantly reduce energy bills.",
-
-        "Lighting": "**Long-term target:** Complete transition to LED lighting across all rooms and outdoor spaces. A full household switch reduces lighting emissions by 75% and saves 50+ kg CO₂ per year while providing better quality light.",
-
-        "Transport": "**Long-term target:** Reduce personal vehicle dependency by 30% through a mix of carpooling, public transport, and cycling for distances under 5 km. This multi-modal approach can save over 500 kg CO₂ annually while improving health and reducing costs.",
-
-        "Food": "**Long-term target:** Adopt a flexitarian diet by reducing meat consumption by 50% and increasing plant-based meals. This balanced approach can save over 900 kg CO₂ per year while maintaining nutritional needs and reducing food costs.",
-
-        "Lifestyle": "**Long-term target:** Shift 70% of purchases to local shopping, reduce packaging waste, and adopt a circular economy mindset (reuse, repair, recycle). This can save 250+ kg CO₂ annually while supporting local businesses and reducing waste."
-    }
-
-    # Use relevant tips if available, otherwise use category-specific goals
-    if relevant_tips and len(relevant_tips) > 0:
+    
+    if relevant_tips:
+        response += "\n**<span class='icon-animated'>📚</span> Additional Insights:**\n\n"
         response += relevant_tips[0]
-    else:
-        goal = category_goals.get(current_activity['Category'], 
-                                  "**Long-term target:** Reduce your overall carbon footprint by 20% in the next 6 months through consistent sustainable choices across transport, energy, and lifestyle.")
-        response += goal
-
+    
     return response, current_activity, alternatives
 
 # ==================== HUGGINGFACE LLM CONFIGURATION ====================
+
 def initialize_llm():
     if not LANGCHAIN_AVAILABLE:
         return None
-
+    
     try:
         hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         if not hf_token:
@@ -407,28 +443,28 @@ def initialize_llm():
                 hf_token = st.secrets.get("HUGGINGFACEHUB_API_TOKEN")
             except:
                 pass
-
+        
         if not hf_token:
             return None
-
+        
         llm = HuggingFaceEndpoint(
             repo_id=st.session_state.model_name,
             huggingfacehub_api_token=hf_token,
             temperature=0.7,
             max_new_tokens=512
         )
-
         return llm
     except Exception as e:
         return None
 
 # ==================== VECTOR STORE FUNCTIONS ====================
+
 @st.cache_resource
 def initialize_vector_store():
     try:
         embedding_model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
         chroma_client = chromadb.Client()
-
+        
         try:
             collection = chroma_client.create_collection(name="sustainability_tips")
         except:
@@ -437,7 +473,7 @@ def initialize_vector_store():
             except:
                 pass
             collection = chroma_client.create_collection(name="sustainability_tips")
-
+        
         for idx, tip in enumerate(SUSTAINABILITY_TIPS):
             embedding = embedding_model.encode(tip, show_progress_bar=False).tolist()
             collection.add(
@@ -445,7 +481,7 @@ def initialize_vector_store():
                 documents=[tip],
                 ids=[f"tip_{idx}"]
             )
-
+        
         return embedding_model, collection
     except Exception as e:
         st.error(f"Error initializing embeddings: {str(e)}")
@@ -460,14 +496,15 @@ def retrieve_relevant_tips(query, embedding_model, collection, n_results=3):
         return []
 
 # ==================== ENHANCED CHART FUNCTIONS ====================
+
 def create_comparison_chart(current_activity, alternatives):
     """Create beautiful horizontal bar chart"""
     activities = [current_activity['Activity']] + [alt['Activity'] for alt in alternatives]
     emissions = [current_activity['Avg_CO2_Emission(kg/day)']] + [alt['Avg_CO2_Emission(kg/day)'] for alt in alternatives]
     colors = ['#ef4444'] + ['#10b981'] * len(alternatives)
-
+    
     fig = go.Figure()
-
+    
     for i, (activity, emission, color) in enumerate(zip(activities, emissions, colors)):
         fig.add_trace(go.Bar(
             y=[activity],
@@ -477,20 +514,19 @@ def create_comparison_chart(current_activity, alternatives):
             text=f"{emission} kg",
             textposition='outside',
             textfont=dict(size=14, color='#1f2937', family='Inter', weight='bold'),
-            hovertemplate=f"<b>{activity}</b><br>CO2: {emission} kg/day<extra></extra>",
-            name=activity,
+            hovertemplate=f"<b>{activity}</b><br>CO₂: {emission} kg/day<extra></extra>",
             showlegend=False
         ))
-
+    
     fig.update_layout(
         title=dict(
-            text="<b>CO2 Emissions Comparison</b>",
+            text="<b>CO₂ Emissions Comparison</b>",
             font=dict(size=24, color='#1f2937', family='Inter'),
             x=0.5,
             xanchor='center'
         ),
         xaxis=dict(
-            title="CO2 Emissions (kg/day)",
+            title="CO₂ Emissions (kg/day)",
             showgrid=True,
             gridwidth=1,
             gridcolor='#f3f4f6',
@@ -510,289 +546,701 @@ def create_comparison_chart(current_activity, alternatives):
         margin=dict(t=80, b=60, l=200, r=100),
         barmode='overlay'
     )
-
+    
     return fig
 
 def create_pie_chart(data):
     df = pd.DataFrame(data)
     category_emissions = df.groupby('Category')['Avg_CO2_Emission(kg/day)'].sum().reset_index()
-
     fig = px.pie(
-        category_emissions,
-        values='Avg_CO2_Emission(kg/day)',
+        category_emissions, 
+        values='Avg_CO2_Emission(kg/day)', 
         names='Category',
-        color_discrete_sequence=['#10b981', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899'],
+        color_discrete_sequence=['#10b981', '#3b82f6', '#ef4444', '#f59e0b'],
         hole=0.5
     )
-
     fig.update_traces(textposition='outside', textinfo='label+percent', marker=dict(line=dict(color='white', width=3)))
     fig.update_layout(height=400, showlegend=True, legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.1), font=dict(family='Inter', size=12), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-
     return fig
 
 # ==================== PDF GENERATION FUNCTIONS ====================
+
 def generate_pdf_report(user_query, ai_response, current_activity, alternatives, savings):
-    """Generate HTML-based PDF report"""
+    """Generate HTML-based PDF report without kaleido dependency"""
+    
     if not current_activity or not alternatives:
         return None
-
+    
     best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
     annual_savings = savings * 365
     trees_saved = int(annual_savings / 21)
     reduction_pct = (savings / current_activity['Avg_CO2_Emission(kg/day)']) * 100 if savings > 0 else 0
-
-    # Clean AI response for PDF
+    
+    # Clean AI response for PDF (remove HTML tags)
     clean_response = re.sub('<[^<]+?>', '', ai_response)
     clean_response = clean_response.replace('**', '')
-
-    # Create chart HTML
+    
+    # Create simple bar chart using HTML/CSS instead of image
     activities_data = [
         (current_activity['Activity'], current_activity['Avg_CO2_Emission(kg/day)'], '#ef4444')
     ] + [
-        (alt['Activity'], alt['Avg_CO2_Emission(kg/day)'], '#10b981')
+        (alt['Activity'], alt['Avg_CO2_Emission(kg/day)'], '#10b981') 
         for alt in alternatives[:3]
     ]
-
+    
     max_emission = max([item[1] for item in activities_data])
-    chart_html = ''
+    
+    chart_html = '<div style="margin: 20px 0;">'
     for activity, emission, color in activities_data:
         bar_width = (emission / max_emission) * 100
-        chart_html += f"""
-        <div style="margin-bottom: 10px;">
-            <div style="font-weight: 600; margin-bottom: 4px; font-size: 12px;">{activity}</div>
-            <div style="background: #f3f4f6; border-radius: 8px; height: 30px; position: relative;">
-                <div style="background: {color}; height: 100%; width: {bar_width}%; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
-                    <span style="color: white; font-weight: 600; font-size: 12px;">{emission} kg</span>
+        chart_html += f'''
+        <div style="margin: 15px 0;">
+            <div style="font-size: 14px; color: #374151; margin-bottom: 5px; font-weight: 600;">{activity}</div>
+            <div style="display: flex; align-items: center;">
+                <div style="background: {color}; height: 40px; width: {bar_width}%; border-radius: 6px; 
+                            display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; 
+                            color: white; font-weight: 700; min-width: 80px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    {emission} kg
                 </div>
             </div>
         </div>
-        """
-
-    # Generate alternatives table
-    alternatives_html = ''
-    for idx, alt in enumerate(alternatives[:3], 1):
-        emission_diff = current_activity['Avg_CO2_Emission(kg/day)'] - alt['Avg_CO2_Emission(kg/day)']
-        alt_reduction_pct = (emission_diff / current_activity['Avg_CO2_Emission(kg/day)']) * 100 if emission_diff > 0 else 0
-        alt_annual_savings = emission_diff * 365
-
-        alternatives_html += f"""
-        <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #10b981;">
-            <h4 style="margin: 0 0 8px 0; color: #1f2937;">{idx}. {alt['Activity']} {alt['Icon']}</h4>
-            <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 13px;">
-                <li>Emissions: {alt['Avg_CO2_Emission(kg/day)']} kg CO2/day</li>
-                <li>Daily savings: {emission_diff:.2f} kg CO2</li>
-                <li>Reduction: {alt_reduction_pct:.0f}%</li>
-                <li>Annual impact: {alt_annual_savings:.0f} kg CO2</li>
-            </ul>
-        </div>
-        """
-
+        '''
+    chart_html += '</div>'
+    
+    # Create HTML report
     html_content = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="UTF-8">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-            body {{ font-family: 'Inter', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1f2937; line-height: 1.6; }}
-            .header {{ text-align: center; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 32px; border-radius: 16px; margin-bottom: 32px; }}
-            .header h1 {{ margin: 0 0 8px 0; font-size: 32px; }}
-            .header p {{ margin: 0; opacity: 0.9; font-size: 14px; }}
-            .section {{ background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 24px; }}
-            .section h2 {{ color: #10b981; font-size: 20px; margin: 0 0 16px 0; border-bottom: 2px solid #10b981; padding-bottom: 8px; }}
-            .metric-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }}
-            .metric {{ text-align: center; background: #f9fafb; padding: 16px; border-radius: 12px; border: 2px solid #e5e7eb; }}
-            .metric-value {{ font-size: 28px; font-weight: 700; color: #10b981; margin-bottom: 4px; }}
-            .metric-label {{ font-size: 12px; color: #6b7280; font-weight: 500; }}
-            .chart-section {{ margin: 24px 0; }}
-            .footer {{ text-align: center; padding: 24px; background: #f9fafb; border-radius: 12px; margin-top: 32px; color: #6b7280; font-size: 12px; }}
-            .query-box {{ background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 8px; margin-bottom: 16px; font-style: italic; color: #1e40af; }}
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+            
+            body {{
+                font-family: 'Inter', Arial, sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: #ffffff;
+                color: #1f2937;
+            }}
+            
+            .header {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            }}
+            
+            .header h1 {{
+                margin: 0;
+                font-size: 36px;
+                font-weight: 800;
+            }}
+            
+            .header p {{
+                margin: 10px 0 0 0;
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            
+            .section {{
+                background: #f9fafb;
+                border: 2px solid #e5e7eb;
+                border-radius: 16px;
+                padding: 30px;
+                margin-bottom: 25px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            }}
+            
+            .section h2 {{
+                color: #10b981;
+                font-size: 24px;
+                font-weight: 700;
+                margin-top: 0;
+                margin-bottom: 15px;
+                border-bottom: 3px solid #10b981;
+                padding-bottom: 10px;
+            }}
+            
+            .query-box {{
+                background: #eff6ff;
+                border-left: 5px solid #3b82f6;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 8px;
+            }}
+            
+            .query-box strong {{
+                color: #1e40af;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }}
+            
+            .metrics-grid {{
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin: 25px 0;
+            }}
+            
+            .metric-card {{
+                background: white;
+                border: 2px solid #d1fae5;
+                border-radius: 12px;
+                padding: 20px;
+                text-align: center;
+                box-shadow: 0 2px 12px rgba(16, 185, 129, 0.1);
+            }}
+            
+            .metric-card .value {{
+                font-size: 32px;
+                font-weight: 800;
+                color: #10b981;
+                margin: 10px 0;
+            }}
+            
+            .metric-card .label {{
+                font-size: 13px;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }}
+            
+            .chart-container {{
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                border: 2px solid #e5e7eb;
+                margin: 20px 0;
+            }}
+            
+            .chart-title {{
+                font-size: 20px;
+                font-weight: 700;
+                color: #1f2937;
+                margin-bottom: 20px;
+                text-align: center;
+            }}
+            
+            .impact-banner {{
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: white;
+                padding: 40px;
+                border-radius: 16px;
+                text-align: center;
+                margin: 30px 0;
+                box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            }}
+            
+            .impact-banner h2 {{
+                color: white;
+                border: none;
+                margin-bottom: 20px;
+                font-size: 28px;
+            }}
+            
+            .impact-stats {{
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+                margin-top: 25px;
+            }}
+            
+            .impact-stat {{
+                background: rgba(255, 255, 255, 0.2);
+                padding: 25px;
+                border-radius: 12px;
+                backdrop-filter: blur(10px);
+            }}
+            
+            .impact-stat .value {{
+                font-size: 48px;
+                font-weight: 800;
+                margin-bottom: 10px;
+            }}
+            
+            .impact-stat .label {{
+                font-size: 16px;
+                opacity: 0.95;
+            }}
+            
+            .alternatives-list {{
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 20px 0;
+            }}
+            
+            .alternative-item {{
+                border-left: 4px solid #10b981;
+                padding: 15px;
+                margin: 15px 0;
+                background: #f0fdf4;
+                border-radius: 8px;
+            }}
+            
+            .alternative-item h3 {{
+                color: #059669;
+                margin: 0 0 10px 0;
+                font-size: 18px;
+            }}
+            
+            .alternative-item p {{
+                margin: 5px 0;
+                color: #4b5563;
+                font-size: 14px;
+            }}
+            
+            .footer {{
+                text-align: center;
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #e5e7eb;
+                color: #6b7280;
+                font-size: 12px;
+            }}
+            
+            .response-text {{
+                line-height: 1.8;
+                color: #374151;
+                font-size: 15px;
+                white-space: pre-wrap;
+            }}
+            
+            @media print {{
+                body {{
+                    padding: 20px;
+                }}
+                .section {{
+                    page-break-inside: avoid;
+                }}
+            }}
         </style>
     </head>
     <body>
         <div class="header">
-            <h1>🌍 CO2 Reduction Report</h1>
+            <h1>🌍 CO₂ Reduction Analysis Report</h1>
             <p>Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
         </div>
-
+        
         <div class="section">
-            <h2>📊 Your Query</h2>
-            <div class="query-box">{user_query}</div>
+            <h2>📝 Your Query</h2>
+            <div class="query-box">
+                <strong>Question:</strong><br>
+                <p style="margin: 10px 0 0 0; font-size: 16px; color: #1f2937;">{user_query}</p>
+            </div>
         </div>
-
+        
         <div class="section">
-            <h2>📈 Current Activity</h2>
-            <p><strong>Activity:</strong> {current_activity['Activity']} {current_activity['Icon']}</p>
-            <p><strong>Category:</strong> {current_activity['Category']}</p>
-            <p><strong>Daily Emissions:</strong> {current_activity['Avg_CO2_Emission(kg/day)']} kg CO2</p>
+            <h2>🤖 AI Analysis</h2>
+            <div class="response-text">{clean_response}</div>
         </div>
-
+        
         <div class="section">
-            <h2>📉 Emissions Comparison</h2>
-            <div class="chart-section">
+            <h2>📊 Current Activity Metrics</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="label">Current Emissions</div>
+                    <div class="value">{current_activity['Avg_CO2_Emission(kg/day)']} kg</div>
+                    <div class="label">per day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Best Alternative</div>
+                    <div class="value">{best_alt['Avg_CO2_Emission(kg/day)']} kg</div>
+                    <div class="label">per day</div>
+                </div>
+                <div class="metric-card">
+                    <div class="label">Reduction</div>
+                    <div class="value">{reduction_pct:.1f}%</div>
+                    <div class="label">savings</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Emissions Comparison Chart</h2>
+            <div class="chart-container">
+                <div class="chart-title">CO₂ Emissions Comparison (kg/day)</div>
                 {chart_html}
             </div>
         </div>
-
-        <div class="section">
-            <h2>💡 Recommended Alternatives</h2>
-            {alternatives_html}
-        </div>
-
-        <div class="section">
-            <h2>🎯 Impact Summary</h2>
-            <div class="metric-grid">
-                <div class="metric">
-                    <div class="metric-value">{savings:.1f} kg</div>
-                    <div class="metric-label">Daily CO2 Saved</div>
+        
+        <div class="impact-banner">
+            <h2>🌟 Your Annual Impact Potential</h2>
+            <p style="font-size: 18px; margin: 15px 0;">
+                By switching to <strong>{best_alt['Activity']}</strong>, you could save:
+            </p>
+            <div class="impact-stats">
+                <div class="impact-stat">
+                    <div class="value">{annual_savings:.0f}</div>
+                    <div class="label">kg CO₂ per year</div>
                 </div>
-                <div class="metric">
-                    <div class="metric-value">{annual_savings:.0f} kg</div>
-                    <div class="metric-label">Annual CO2 Saved</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">{trees_saved}</div>
-                    <div class="metric-label">Trees Equivalent</div>
+                <div class="impact-stat">
+                    <div class="value">{trees_saved}</div>
+                    <div class="label">Trees Equivalent</div>
                 </div>
             </div>
         </div>
-
+        
+        <div class="section">
+            <h2>💡 Recommended Alternatives</h2>
+            <div class="alternatives-list">
+    """
+    
+    # Add alternatives
+    for idx, alt in enumerate(alternatives[:3], 1):
+        emission_diff = current_activity['Avg_CO2_Emission(kg/day)'] - alt['Avg_CO2_Emission(kg/day)']
+        if emission_diff > 0:
+            alt_reduction_pct = (emission_diff / current_activity['Avg_CO2_Emission(kg/day)']) * 100
+            alt_annual_savings = emission_diff * 365
+            html_content += f"""
+                <div class="alternative-item">
+                    <h3>{idx}. {alt['Activity']} {alt['Icon']}</h3>
+                    <p>• Emissions: {alt['Avg_CO2_Emission(kg/day)']} kg CO₂/day</p>
+                    <p>• Daily savings: {emission_diff:.2f} kg CO₂</p>
+                    <p>• Reduction: {alt_reduction_pct:.0f}%</p>
+                    <p>• Annual impact: {alt_annual_savings:.0f} kg CO₂</p>
+                </div>
+            """
+    
+    html_content += """
+            </div>
+        </div>
+        
         <div class="footer">
-            <p><strong>🤖 AI-Powered Environmental Intelligence</strong></p>
-            <p>This report was generated using smart AI analysis and sustainability data.</p>
+            <p><strong>© 2025 CO₂ Reduction Platform | Powered by AI 🤖</strong></p>
+            <p>This report was generated automatically based on your query and environmental data.</p>
+            <p style="margin-top: 15px; font-size: 11px; color: #9ca3af;">
+                To save as PDF: Press Ctrl+P (Windows) or Cmd+P (Mac), then select "Save as PDF"
+            </p>
         </div>
     </body>
     </html>
     """
-
+    
     return html_content
 
-def get_pdf_download_link(html_content):
-    """Generate download link for PDF report"""
-    b64 = base64.b64encode(html_content.encode()).decode()
-    href = f'<a href="data:text/html;base64,{b64}" download="co2_reduction_report.html" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 16px;">📥 Download Report (HTML)</a>'
-    return href
+# ==================== MAIN APP ====================
 
-# ==================== MAIN APPLICATION ====================
 def main():
-    # Header
-    st.markdown("""
-    <div style='text-align: center; background: white; padding: 2rem; border-radius: 16px; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);'>
-        <h1 style='color: #10b981; margin-bottom: 0.5rem;'>🌍 CO2 Reduction Platform</h1>
-        <p style='color: #6b7280; font-size: 18px; margin: 0;'>AI-Powered Environmental Intelligence</p>
+    # Hero Section
+    st.markdown(f"""
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">🌍 CO₂ Reduction Platform</h1>
+            <p class="hero-subtitle">
+                AI-Powered Environmental Intelligence 
+                <span class="llm-badge">🤖 Smart AI</span>
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat-item">
+                    <span class="hero-stat-value">{st.session_state.queries_count}</span>
+                    <span class="hero-stat-label">Queries Analyzed</span>
+                </div>
+                <div class="hero-stat-item">
+                    <span class="hero-stat-value">{st.session_state.total_savings:.1f}</span>
+                    <span class="hero-stat-label">kg CO₂ Saved</span>
+                </div>
+                <div class="hero-stat-item">
+                    <span class="hero-stat-value">{int(st.session_state.total_savings * 365 / 21)}</span>
+                    <span class="hero-stat-label">Trees Equivalent</span>
+                </div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
-
-    # Initialize embedding system
-    embedding_model, collection = initialize_vector_store()
-
-    # Metrics row
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("💾 Total CO2 Saved", f"{st.session_state.total_savings:.1f} kg", "Lifetime")
-    with col2:
-        st.metric("🔍 Queries Analyzed", st.session_state.queries_count, "Total")
-    with col3:
-        trees_equivalent = int(st.session_state.total_savings / 21)
-        st.metric("🌳 Trees Equivalent", trees_equivalent, "Planted")
-
-    st.markdown("---")
-
-    # User input
-    st.markdown("""
-    <div style='background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);'>
-        <h3 style='color: #1f2937; margin-top: 0;'>💬 Tell us about your daily activity</h3>
-        <p style='color: #6b7280; margin-bottom: 1rem;'>Ask about transport, food, energy usage, or any daily activity...</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    user_query = st.text_input(
-        "Enter your query:",
-        placeholder="e.g., 'I use AC for 8 hours every day' or 'I drive a car 20km daily'",
-        label_visibility="collapsed",
-        key="main_input"
-    )
-
-    col_submit, col_clear = st.columns([1, 4])
-    with col_submit:
-        submit_button = st.button("🔍 Analyze", use_container_width=True)
-    with col_clear:
-        if st.button("🗑️ Clear History", use_container_width=True):
+    
+    # Initialize systems
+    with st.spinner("🤖 Initializing AI Systems..."):
+        embedding_model, collection = initialize_vector_store()
+        llm = initialize_llm()
+    
+    if not embedding_model:
+        st.error("❌ Failed to initialize embedding system")
+        return
+    
+    # Main Content Area
+    st.markdown("## <span class='icon-animated'>💬</span> Environmental AI Assistant", unsafe_allow_html=True)
+    col_left, col_right = st.columns([2, 1])
+    
+    with col_left:
+        st.markdown('<div class="input-section">', unsafe_allow_html=True)
+        st.markdown('<h3 class="section-title"><span class="icon-animated">🔍</span> Ask Your Question</h3>', unsafe_allow_html=True)
+        
+        # Quick Examples
+        st.markdown("#### <span class='icon-animated'>📝</span> Quick Examples", unsafe_allow_html=True)
+        examples = [
+            ("🚗", "Transport", "I drive 20 km daily using a petrol car. How can I reduce my CO₂ emissions?"),
+            ("🏠", "Household", "How can I reduce CO₂ from household electricity usage?"),
+            ("🥗", "Food", "What are eco-friendly food choices to reduce my carbon footprint?"),
+            ("🛍️", "Lifestyle", "How does online shopping impact my carbon footprint?")
+        ]
+        cols = st.columns(2)
+        for idx, (icon, category, example) in enumerate(examples):
+            with cols[idx % 2]:
+                if st.button(f"{icon} {category}", key=f"ex{idx}", use_container_width=True):
+                    st.session_state.user_query = example
+                    st.session_state.trigger_submit = True
+                    st.rerun()
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        user_query = st.text_area(
+            "Type your question here:",
+            height=150,
+            value=st.session_state.get('user_query', ''),
+            placeholder="e.g., I use AC for 8 hours daily. How can I reduce emissions?",
+            key="query_input"
+        )
+        
+        col_btn1, col_btn2 = st.columns([3, 1])
+        with col_btn1:
+            submit_button = st.button("🔍 Analyze & Get Recommendations", type="primary", use_container_width=True)
+        with col_btn2:
+            clear_chat = st.button("🗑️ Clear Chat", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        if clear_chat:
             st.session_state.conversation_history = []
-            st.session_state.history = []
+            st.session_state.total_savings = 0
+            st.session_state.queries_count = 0
             st.rerun()
-
-    # Process query
-    if submit_button and user_query:
-        with st.spinner("🤖 Analyzing your carbon footprint..."):
-            # Retrieve relevant tips
-            relevant_tips = retrieve_relevant_tips(user_query, embedding_model, collection) if embedding_model and collection else []
-
-            # Generate response
-            response, current_activity, alternatives = generate_smart_response(user_query, CO2_DATA, relevant_tips)
-
-            # Calculate savings
-            if current_activity and alternatives:
-                best_alternative = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
-                savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alternative['Avg_CO2_Emission(kg/day)']
-                if savings > 0:
-                    st.session_state.total_savings += savings
-            else:
-                savings = 0
-
-            st.session_state.queries_count += 1
-
-            # Add to history
-            st.session_state.conversation_history.append({
-                "query": user_query,
-                "response": response,
-                "current_activity": current_activity,
-                "alternatives": alternatives,
-                "savings": savings
-            })
-
-    # Display results
-    if st.session_state.conversation_history:
-        latest = st.session_state.conversation_history[-1]
-
-        st.markdown("---")
-        st.markdown("## 🤖 AI Assistant Response")
-
-        # Display response in a nice card
-        st.markdown(f"""
-        <div style='background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 1.5rem;'>
-            {latest['response']}
+    
+    with col_right:
+        st.markdown("### <span class='icon-animated'>🌍</span> Impact Preview", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="image-card" style="height: 250px; margin-bottom: 1.5rem;">
+            <img src="https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=800&q=80" 
+                 style="height: 250px; width: 100%; object-fit: cover; border-radius: 16px;">
+            <div class="image-overlay-text" style="position: absolute; bottom: 20px; left: 20px;">
+                <h4 style="color: white; margin: 0;">🌱 Every Action Counts</h4>
+                <p style="color: rgba(255,255,255,0.9); margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                    Make sustainable choices today
+                </p>
+            </div>
         </div>
         """, unsafe_allow_html=True)
-
-        # Show chart if we have activity data
-        if latest['current_activity'] and latest['alternatives']:
-            st.markdown("## 📊 Visual Comparison")
-            chart = create_comparison_chart(latest['current_activity'], latest['alternatives'])
-            st.plotly_chart(chart, use_container_width=True)
-
-            # PDF download
-            st.markdown("## 📄 Export Report")
-            pdf_html = generate_pdf_report(
-                latest['query'],
-                latest['response'],
-                latest['current_activity'],
-                latest['alternatives'],
-                latest['savings']
+        
+        st.markdown("#### <span class='icon-animated'>🎯</span> System Status", unsafe_allow_html=True)
+        st.success("✅ Smart Response Engine: Active")
+        st.info("🧠 Enhanced Query Parser: Enabled")
+        if llm:
+            st.success("🤗 HuggingFace LLM: Connected")
+        else:
+            st.warning("⚠️ HuggingFace LLM: Offline Mode")
+        
+        st.markdown("#### <span class='icon-animated'>📊</span> Quick Stats", unsafe_allow_html=True)
+        st.info(f"🌍 Global Target:\n< 6 kg CO₂/person/day by 2030")
+        st.success(f"🌳 Tree Impact:\n1 tree = 21 kg CO₂/year")
+    
+    # Display conversation history with charts
+    if st.session_state.conversation_history:
+        st.markdown("---")
+        st.markdown("## <span class='icon-animated'>💬</span> Conversation History", unsafe_allow_html=True)
+        
+        st.markdown("""
+        <style>
+        .conversation-wrapper {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .message-count {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('<div class="conversation-wrapper">', unsafe_allow_html=True)
+        st.markdown(f'<div class="message-count">📊 Total Messages: {len(st.session_state.conversation_history)}</div>', unsafe_allow_html=True)
+        
+        # Display all messages with charts
+        for idx, msg in enumerate(st.session_state.conversation_history):
+            if msg['role'] == 'user':
+                st.markdown(f"""
+                <div class="chat-message user-message">
+                    <strong>👤 You:</strong><br>{msg['content']}
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown(f"""
+                <div class="chat-message assistant-message">
+                    <strong>🤖 AI Assistant:</strong><br>{msg['content']}
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Display chart after each AI response
+                if 'chart_data' in msg and msg['chart_data']['current_activity']:
+                    current_act = msg['chart_data']['current_activity']
+                    alts = msg['chart_data']['alternatives']
+                    savings = msg['chart_data']['savings']
+                    
+                    # Show metrics
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Current Emissions", f"{current_act['Avg_CO2_Emission(kg/day)']} kg/day")
+                    with col2:
+                        best_alt = min(alts, key=lambda x: x['Avg_CO2_Emission(kg/day)']) if alts else None
+                        if best_alt:
+                            st.metric("Best Alternative", f"{best_alt['Avg_CO2_Emission(kg/day)']} kg/day", delta=f"-{savings:.2f} kg")
+                    with col3:
+                        if savings > 0:
+                            reduction_pct = (savings / current_act['Avg_CO2_Emission(kg/day)']) * 100
+                            st.metric("Reduction", f"{reduction_pct:.1f}%", delta=f"-{savings:.2f} kg/day")
+                    
+                    # Show chart
+                    st.plotly_chart(create_comparison_chart(current_act, alts[:3]), use_container_width=True, key=f"chart_{idx}")
+                    
+                    # Impact banner
+                    if savings > 0 and best_alt:
+                        annual_savings = savings * 365
+                        trees_saved = int(annual_savings / 21)
+                        
+                        # Add download button for PDF
+                        col_impact1, col_impact2 = st.columns([4, 1])
+                        
+                        with col_impact1:
+                            st.markdown(f"""
+                            <div class="impact-banner">
+                                <h2><span class='icon-animated'>🌟</span> Your Annual Impact Potential</h2>
+                                <p style="font-size: 1.3rem; margin: 1rem 0; color: white;">
+                                    By switching to <strong>{best_alt['Activity']}</strong>, you could save:
+                                </p>
+                                <div style="display: flex; justify-content: center; gap: 3rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                                    <div><div style="font-size: 3rem; font-weight: 800;">{annual_savings:.0f}</div><div style="font-size: 1.1rem; opacity: 0.95;">kg CO₂ per year</div></div>
+                                    <div><div style="font-size: 3rem; font-weight: 800;">{trees_saved}</div><div style="font-size: 1.1rem; opacity: 0.95;">Trees Equivalent</div></div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        
+                        with col_impact2:
+                            # Generate PDF
+                            user_query_text = [m['content'] for m in st.session_state.conversation_history if m['role'] == 'user'][-1]
+                            html_report = generate_pdf_report(
+                                user_query_text,
+                                msg['content'],
+                                current_act,
+                                alts,
+                                savings
+                            )
+                            
+                            if html_report:
+                                st.download_button(
+                                    label="📥 Download Generated File ",
+                                    data=html_report,
+                                    file_name=f"CO2_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
+                                    mime="text/html",
+                                    key=f"download_{idx}",
+                                    use_container_width=True
+                                )
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # ========== PROCESS NEW QUERY ==========
+    should_process = (submit_button and user_query) or (st.session_state.trigger_submit and st.session_state.user_query)
+    
+    if should_process:
+        st.session_state.trigger_submit = False
+        query_to_process = st.session_state.user_query if st.session_state.user_query else user_query
+        
+        # Add user message
+        st.session_state.conversation_history.append({'role': 'user', 'content': query_to_process})
+        
+        with st.spinner("🤖 AI is analyzing your query..."):
+            relevant_tips = retrieve_relevant_tips(query_to_process, embedding_model, collection)
+            ai_response, current_activity, alternatives = generate_smart_response(
+                query_to_process, CO2_DATA, relevant_tips
             )
-            if pdf_html:
-                st.markdown(get_pdf_download_link(pdf_html), unsafe_allow_html=True)
-
-    # Sidebar with category breakdown
-    with st.sidebar:
-        st.markdown("## 📈 Category Breakdown")
-        pie_chart = create_pie_chart(CO2_DATA)
-        st.plotly_chart(pie_chart, use_container_width=True)
-
-        st.markdown("## 📚 Quick Facts")
-        st.info("🌳 21 kg CO2 = 1 tree planted")
-        st.info("🚗 Average car: 4.6 kg CO2/day")
-        st.info("🥗 Vegetarian diet: 71% less CO2")
+            
+            # Calculate savings
+            savings = 0
+            if current_activity and alternatives:
+                best_alt = min(alternatives, key=lambda x: x['Avg_CO2_Emission(kg/day)'])
+                savings = current_activity['Avg_CO2_Emission(kg/day)'] - best_alt['Avg_CO2_Emission(kg/day)']
+                if savings > 0:
+                    st.session_state.total_savings += savings
+            
+            # Add assistant response with chart data
+            st.session_state.conversation_history.append({
+                'role': 'assistant', 
+                'content': ai_response,
+                'chart_data': {
+                    'current_activity': current_activity,
+                    'alternatives': alternatives,
+                    'savings': savings
+                }
+            })
+            
+            st.session_state.queries_count += 1
+        
+        # Clear the input for next query
+        st.session_state.user_query = ''
+        st.rerun()
+    
+    elif submit_button:
+        st.warning("⚠️ Please enter a question to get started!")
+    
+    st.markdown("---")
+    
+    # Dashboard Metrics
+    st.markdown("## <span class='icon-animated'>📊</span> Environmental Dashboard", unsafe_allow_html=True)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown(f"""<div class="metric-card-pro"><span class="metric-icon icon-animated">🌍</span><div class="metric-value-pro">{st.session_state.queries_count}</div><div class="metric-label-pro">Queries Made</div></div>""", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""<div class="metric-card-pro"><span class="metric-icon icon-animated">💚</span><div class="metric-value-pro">{st.session_state.total_savings:.1f}</div><div class="metric-label-pro">kg CO₂ Saved</div></div>""", unsafe_allow_html=True)
+    with col3:
+        trees = st.session_state.total_savings * 365 / 21
+        st.markdown(f"""<div class="metric-card-pro"><span class="metric-icon icon-animated">🌳</span><div class="metric-value-pro">{int(trees)}</div><div class="metric-label-pro">Trees Equivalent</div></div>""", unsafe_allow_html=True)
+    with col4:
+        st.markdown(f"""<div class="metric-card-pro"><span class="metric-icon icon-animated">📈</span><div class="metric-value-pro">{len(CO2_DATA)}</div><div class="metric-label-pro">Activities Tracked</div></div>""", unsafe_allow_html=True)
+    
+    # Footer Section
+    st.markdown('<div class="additional-resources-section">', unsafe_allow_html=True)
+    st.markdown('<h2 style="color: #047857; font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 2rem;"><span class="icon-animated">📚</span> Additional Resources</h2>', unsafe_allow_html=True)
+    footer_col1, footer_col2, footer_col3 = st.columns(3)
+    with footer_col1:
+        st.markdown("### 🎯 Category Breakdown")
+        st.plotly_chart(create_pie_chart(CO2_DATA), use_container_width=True, key="footer_pie")
+    with footer_col2:
+        st.markdown("### 🔧 System Features")
+        st.markdown("""
+        <div class="tech-item"><span class="tech-icon icon-animated">🧠</span><span>Smart Query Parser</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">📊</span><span>Real-time Analysis</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">🗄️</span><span>Vector Search Engine</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">🤗</span><span>AI-Powered Insights</span></div>
+        <div class="tech-item"><span class="tech-icon icon-animated">📈</span><span>Plotly Charts</span></div>
+        """, unsafe_allow_html=True)
+    with footer_col3:
+        st.markdown("### <span class='icon-animated'>🎯</span> Quick Facts", unsafe_allow_html=True)
+        st.info("🌍 **Global Target**\n\nLess than 6 kg CO₂ per person per day by 2030")
+        st.success("🌳 **Tree Impact**\n\n1 tree absorbs ~21 kg CO₂ per year")
+        if st.button("🔄 Reset Dashboard", use_container_width=True, key="footer_reset"):
+            st.session_state.total_savings = 0
+            st.session_state.queries_count = 0
+            st.session_state.history = []
+            st.session_state.conversation_history = []
+            st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Copyright Footer
+    st.markdown("""
+    <div class="copyright-footer">
+        <p class="copyright-text">
+            © 2025 CO₂ Reduction Platform | Powered by AI 🤖
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
